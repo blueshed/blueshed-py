@@ -7,8 +7,8 @@ version = '0.1'
 
 setup(name='blueshed-py',
       version=version,
-      packages=find_packages('src',exclude=['blueshed.tests*']),
-      py_modules = ['blueshed'],
+      packages=['blueshed'],
+      package_dir={'blueshed': 'src/blueshed'},
       include_package_data = True, 
       exclude_package_data = { '': ['*tests/*'] },
       install_requires = [
