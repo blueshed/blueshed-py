@@ -62,6 +62,9 @@ def parse_date(value):
 def parse_unix_time(value):
     return datetime.datetime.fromtimestamp(int(value))
 
+def to_unix_time(value):
+    return int(datetime.datetime().time().time() * 1000)
+
 
 def patch_tornado():
     # to provide svg and gzip svg support
