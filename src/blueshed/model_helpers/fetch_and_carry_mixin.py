@@ -34,10 +34,10 @@ class FetchAndCarryMixin(object):
                             return query.serialize
                         return query
                 return {
-                    "rows": [self._serialize(item) for item in query] 
+                    "rows": [self._fc_serialize(item) for item in query] 
                 }
             elif id:
-                return self._serialize(query.get(id))
+                return self._fc_serialize(query.get(id))
             else:
                 total = query.count()
                 if order_by:
@@ -45,7 +45,7 @@ class FetchAndCarryMixin(object):
                 limit_query = query.limit(limit or 10).offset(offset or 0)
                 return {
                         "total": total,
-                        "rows": [self._serialize(item) for item in limit_query] 
+                        "rows": [self._fc_serialize(item) for item in limit_query] 
                        }   
     
     
