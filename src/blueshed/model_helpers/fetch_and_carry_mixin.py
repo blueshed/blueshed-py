@@ -120,12 +120,14 @@ class FetchAndCarryMixin(object):
                         name = p["name"]
                         if name in values and\
                            p.get("read_only") is not True and \
+                           p["attr"][0] is not "_" and \
                            p["attr"] in ["column","hybrid"]:
                                 value = values[name]
                                 logging.info("setting: %s=%r",name,value)
                                 setattr(item,name,value)
                 else:
-                    values = [(n['name'],getattr(item,n['name'])) for n in meta['properties'].values() if n['attr'] in ['column','hybrid','pk']]
+                    values = [(n['name'],getattr(item,n['name'])) for n in meta['properties'].values()\
+                               if n['attr'][0] is not "_" and n['attr'] in ['column','hybrid','pk']]
                     values.append(("_type",meta['name']))
                     item = OrderedDict(values)
         return item
