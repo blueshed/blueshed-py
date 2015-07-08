@@ -13,7 +13,7 @@ from blueshed.utils import utils
 
 class SockJSHandler(SockJSConnection):
     ''' 
-        Using the SockJS WebSocket Connection - monkey patched to work like landfall.core.WebSocket
+        Using the SockJS WebSocket Connection - monkey patched to work like websocket_handler
     '''
     
     def __init__(self, *args, **kwargs):

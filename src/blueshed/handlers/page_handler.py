@@ -8,6 +8,10 @@ import logging
 
 
 class PageHandler(tornado.web.RequestHandler):
+    """
+        Simple un-authenticated page handler, with a configurable
+        page to be rendered.
+    """
         
     def initialize(self, page=None):
         self.page = page if page else "index.html"

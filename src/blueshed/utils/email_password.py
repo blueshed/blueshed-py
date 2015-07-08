@@ -1,4 +1,6 @@
 '''
+Wrapper for template based emails of password
+
 Created on Apr 7, 2013
 
 @author: peterb

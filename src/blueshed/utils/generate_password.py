@@ -1,4 +1,7 @@
 '''
+Password generation of four commonly used words from a word list
+seperated by hyphens.
+
 Created on Apr 7, 2013
 
 @author: peterb

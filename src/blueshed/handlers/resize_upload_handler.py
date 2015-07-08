@@ -14,6 +14,10 @@ from blueshed.utils.resize_and_crop import resize_and_crop
 
 
 class ResizeUploadHandler(StaticFileHandler):
+    """
+        Uses pillow to thumbnail an uploaded file
+        to a local directory
+    """
     
     def initialize(self, path, default_filename=None):
         self.check_dir(path)

@@ -11,6 +11,10 @@ import os
 
 
 class UploadHandler(StaticFileHandler):
+    """
+        Override of the StaticFileHandler to allow for
+        uploads to the static folder
+    """
     
     def _check_dir_(self, path):
         if not os.path.isdir(path):

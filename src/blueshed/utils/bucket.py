@@ -1,4 +1,7 @@
 '''
+Wrapper for AWS Bucket.
+
+
 Created on 26 Mar 2014
 
 @author: peterb

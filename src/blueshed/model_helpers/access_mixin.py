@@ -8,6 +8,9 @@ from sqlalchemy.sql.expression import and_
 import logging
 
 class Access(object):
+    """
+        Provides a mixin to support authentication
+    """
 
     # ACCESS CONTROL
     
@@ -32,7 +35,7 @@ class Access(object):
     def register(self, accl, email):
         if accl is not None:
             raise Exception("cannot register another user.")
-        if len(unicode(email)) < 6 or u"@" not in email or u"." not in email:
+        if len(email) < 6 or "@" not in email or "." not in email:
             raise Exception("Email invalid")
         with self.session as session:
             password = self.generate_password()

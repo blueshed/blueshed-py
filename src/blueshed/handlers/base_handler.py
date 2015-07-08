@@ -6,6 +6,12 @@ Created on Apr 7, 2013
 import tornado.web
 
 class BaseHandler(tornado.web.RequestHandler):
+    """
+        This provides property access to the application settings
+        for the control, cookie name, current user and
+        provides a method to set the current user.
+    """
+    
     
     @property
     def control(self):

@@ -1,4 +1,8 @@
 '''
+Base control provides support for websocket clients and
+transaction based broadcasting of events
+
+
 Created on 21 Oct 2014
 
 @author: peterb

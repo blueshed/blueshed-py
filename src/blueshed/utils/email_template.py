@@ -1,4 +1,6 @@
 '''
+Render a template and email the result
+
 Created on Apr 7, 2013
 
 @author: peterb

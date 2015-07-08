@@ -7,6 +7,9 @@ from blueshed.handlers.base_handler import BaseHandler
 import logging
 
 class LoginHandler(BaseHandler):
+    """
+        Simple login handler for the access mixin
+    """
     
     def initialize(self, page=None):
         self.page = page if page else "login.html"

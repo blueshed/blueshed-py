@@ -9,6 +9,12 @@ from blueshed.utils.utils import dumps
 
 
 class IndexHandler(BaseHandler):
+    """
+        A simple over-ride of BaseHandler to provide a
+        service side rendered template that is
+        authenticated. You can specify the page
+        in the application handler declaration.
+    """
         
     def initialize(self, page=None):
         self.page = page if page else "index.html"

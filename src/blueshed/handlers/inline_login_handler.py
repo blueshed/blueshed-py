@@ -6,7 +6,10 @@ Created on Apr 7, 2013
 from blueshed.handlers.base_handler import BaseHandler
 
 class InlineLoginHandler(BaseHandler):
-    
+    """
+        Pass username and password as open arguments and login
+        not secure, not good, but someone needed it.
+    """
     
     def get(self, error=None):
         try:

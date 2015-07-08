@@ -1,4 +1,7 @@
 '''
+Audit Listener works with audit to provide a log of
+crud activity in the db
+
 Created on May 15, 2012
 
 @author: peterb

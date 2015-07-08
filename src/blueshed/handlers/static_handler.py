@@ -15,6 +15,11 @@ Sample config of application
 
 
 class StaticHandler(StaticFileHandler):
+    """
+        Allows you to chain static folders.
+        If not found in the first will look in the next before
+        returning a 404
+    """
     
     def initialize(self, path, default_filename=None, others=None):
         StaticFileHandler.initialize(self, path, default_filename)

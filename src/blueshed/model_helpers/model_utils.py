@@ -1,4 +1,7 @@
 '''
+Connect, create_all, drop_all and date overlaps - all useful
+and used in every system
+
 Created on 3 Mar 2015
 
 @author: peterb

@@ -1,4 +1,7 @@
 '''
+This is used by Audit to keep track of versions.
+Perhaps version_base is better?
+
 Created on Nov 28, 2012
 
 @author: peterb

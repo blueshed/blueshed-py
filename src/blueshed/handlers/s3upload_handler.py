@@ -8,9 +8,12 @@ from PIL import Image
 import logging
 import io
 import os
-from blueshed.handlers.bucket import Bucket
+from blueshed.utils.bucket import Bucket
 
 class S3UploadHandler(tornado.web.RequestHandler):
+    """
+        Simple upload hanlder to save images to s3.
+    """
     
     TYPE_MAP = {
         ".jpg": "JPEG",

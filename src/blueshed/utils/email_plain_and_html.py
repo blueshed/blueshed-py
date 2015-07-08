@@ -1,4 +1,6 @@
 '''
+HTML and Plain template emails
+
 Created on 30 Jan 2015
 
 @author: peterb

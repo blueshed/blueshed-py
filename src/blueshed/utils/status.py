@@ -1,4 +1,7 @@
 '''
+A simple dictionary that is broadcast when changed, but makes sure it
+has changed before actually broadcasting.
+
 Created on Nov 26, 2012
 
 @author: peterb

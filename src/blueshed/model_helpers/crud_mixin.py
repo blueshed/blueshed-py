@@ -1,4 +1,6 @@
 '''
+Crub Mixin has been superceded by fetch_and_carry mixin
+
 Created on 2 Jul 2014
 
 @author: peterb

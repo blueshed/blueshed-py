@@ -12,6 +12,9 @@ import time
 
 
 class WebsocketHandler(websocket.WebSocketHandler):
+    """
+        Simple authenticated websocket rpc of the control
+    """
     
     @property
     def control(self):

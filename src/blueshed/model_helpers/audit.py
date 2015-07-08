@@ -1,4 +1,6 @@
 '''
+Audit is the persistent log of crud activity
+
 Created on Sep 27, 2011
 
 @author: peterb

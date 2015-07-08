@@ -1,4 +1,7 @@
 '''
+A useful cache of expensive properties - flushed with a flush of
+the host object.
+
 Created on Oct 21, 2013
 
 @author: peterb

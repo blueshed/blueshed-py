@@ -1,4 +1,8 @@
 '''
+This enables the use of version_id as a version column - so that
+updates will only be made if the version number is the same and then
+incremented by the update!
+
 Created on 19 Feb 2015
 
 @author: peterb

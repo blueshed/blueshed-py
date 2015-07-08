@@ -1,4 +1,14 @@
 '''
+A Simple mixin that inspects your model and provides a
+serialize interface to is through two public methods:
+    
+    fetch - the equivalent of select, get_by_id and get_attribute
+    carry - the equivalent of create, update and delete 
+
+Send the _fc_description to the websocket client can enable
+a knockout clientside observable model updated by messages
+in real-time.
+
 Created on 8 Jul 2015
 
 @author: peterb

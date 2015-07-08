@@ -9,6 +9,11 @@ from blueshed.handlers.base_handler import BaseHandler
 
 
 class RestHandler(BaseHandler):
+    """
+        Simple rest hanlder with  no authentication
+        that expects the fecth_and_carry mixin to be
+        mixed into the control
+    """
     
      
     def prepare(self):

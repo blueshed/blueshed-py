@@ -1,4 +1,7 @@
 '''
+Support for multi-processing using python process pools in
+Tornado.
+
 Created on 8 Jun 2015
 
 @author: peterb

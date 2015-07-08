@@ -1,4 +1,7 @@
 '''
+The minimum Person, Permission for access mixin - inlcude in
+you model and mixin in access control
+
 Created on 16 Jul 2014
 
 @author: peterb

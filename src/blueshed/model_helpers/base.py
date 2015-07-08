@@ -1,4 +1,7 @@
 '''
+Simple Base class that knows how to create its own table name
+with some MySQL setup.
+
 Created on Feb 23, 2013
 
 @author: peterb

@@ -1,4 +1,7 @@
 '''
+NB. This is not aware of hybrid properies.
+See: fetch_and_cary_mixin
+
 Created on 29 Jun 2015
 
 @author: peterb
