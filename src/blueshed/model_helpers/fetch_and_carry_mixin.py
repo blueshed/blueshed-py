@@ -122,88 +122,88 @@ class FetchAndCarryMixin(object):
  
  
  
-        def _fc_properties_of(self, cls):
-            b = inspect(cls)
-            pk = b.primary_key[0]
-            result = OrderedDict()
-            result[pk.name]=OrderedDict([
-                     ("name", pk.name), 
-                     ("attr", "pk"),
-                     ("type", pk.type.__class__.__name__),
-                     ("read_only", True),
-                     ("doc", pk.doc)
-                     ])
-            for key in b.column_attrs.keys():
-                if key == pk.name or  key[0] == "_": continue
-                attr = b.column_attrs[key]
-                p = OrderedDict([
-                     ("name", key), 
-                     ("attr", "column"),
-                     ("type", attr.columns[0].type.__class__.__name__),
-                     ("read_only", False),
-                     ("fkey", len(attr.columns[0].foreign_keys) > 0),
-                     ("doc", attr.doc)
-                     ])
-                result[key]= p
-            for key in b.synonyms.keys():
-                if key[0] == "_": continue
-                attr = b.synonyms[key]
-                p = OrderedDict([
-                     ("name", key), 
-                     ("attr", "synonym"),
-                     ("type", attr.name.type.__class__.__name__),
-                     ("read_only", True),
-                     ("doc", attr.doc)
-                     ])
-                result[key]= p
-            for key in b.relationships.keys():
-                if key[0] == "_": continue
-                attr = b.relationships[key]
-                direction = attr.direction.name
-                fkey = None
-                if direction == "MANYTOONE":
-                    fkey = list(attr.local_columns)[0].name
-                elif direction == "ONETOMANY":
-                    fkey = list(attr.remote_side)[0].name
-                p = OrderedDict([ 
-                     ("name", key),  
-                     ("attr", "relation"),
-                     ("direction", direction),
-                     ("type", attr.mapper.class_.__name__),
-                     ("fkey", fkey),
-                     ("doc", attr.doc)
-                     ])
-                result[key]= p
-            for key in b.all_orm_descriptors.keys():
-                if key in result.keys() or key[0] == "_": continue
-                attr = b.all_orm_descriptors[key]
-                p = OrderedDict([
-                     ("name", key), 
-                     ("attr", "hybrid"),
-                     ("type", None),
-                     ("read_only", True),
-                     ("doc", None)
-                     ])
-                result[key]= p
-            return pk.name, result
+    def _fc_properties_of(self, cls):
+        b = inspect(cls)
+        pk = b.primary_key[0]
+        result = OrderedDict()
+        result[pk.name]=OrderedDict([
+                 ("name", pk.name), 
+                 ("attr", "pk"),
+                 ("type", pk.type.__class__.__name__),
+                 ("read_only", True),
+                 ("doc", pk.doc)
+                 ])
+        for key in b.column_attrs.keys():
+            if key == pk.name or  key[0] == "_": continue
+            attr = b.column_attrs[key]
+            p = OrderedDict([
+                 ("name", key), 
+                 ("attr", "column"),
+                 ("type", attr.columns[0].type.__class__.__name__),
+                 ("read_only", False),
+                 ("fkey", len(attr.columns[0].foreign_keys) > 0),
+                 ("doc", attr.doc)
+                 ])
+            result[key]= p
+        for key in b.synonyms.keys():
+            if key[0] == "_": continue
+            attr = b.synonyms[key]
+            p = OrderedDict([
+                 ("name", key), 
+                 ("attr", "synonym"),
+                 ("type", attr.name.type.__class__.__name__),
+                 ("read_only", True),
+                 ("doc", attr.doc)
+                 ])
+            result[key]= p
+        for key in b.relationships.keys():
+            if key[0] == "_": continue
+            attr = b.relationships[key]
+            direction = attr.direction.name
+            fkey = None
+            if direction == "MANYTOONE":
+                fkey = list(attr.local_columns)[0].name
+            elif direction == "ONETOMANY":
+                fkey = list(attr.remote_side)[0].name
+            p = OrderedDict([ 
+                 ("name", key),  
+                 ("attr", "relation"),
+                 ("direction", direction),
+                 ("type", attr.mapper.class_.__name__),
+                 ("fkey", fkey),
+                 ("doc", attr.doc)
+                 ])
+            result[key]= p
+        for key in b.all_orm_descriptors.keys():
+            if key in result.keys() or key[0] == "_": continue
+            attr = b.all_orm_descriptors[key]
+            p = OrderedDict([
+                 ("name", key), 
+                 ("attr", "hybrid"),
+                 ("type", None),
+                 ("read_only", True),
+                 ("doc", None)
+                 ])
+            result[key]= p
+        return pk.name, result
+    
         
-            
-        def _fc_describe(self, Base):
-            result = []
-            for name, cls in Base._decl_class_registry.items():
-                if name in ['Audit']: continue
-                try:
-                    if name[0] != "_":
-                        pk, properties = self._fc_properties_of(cls)
-                        result.append(OrderedDict([
-                                       ("name", name),
-                                       ("pk", pk),
-                                       ("properties", properties)
-                                       ]))
-                except:
-                    logging(name)
-                    raise
-            result.sort(key=lambda v: v['name'])
-            return result
+    def _fc_describe(self, Base):
+        result = []
+        for name, cls in Base._decl_class_registry.items():
+            if name in ['Audit']: continue
+            try:
+                if name[0] != "_":
+                    pk, properties = self._fc_properties_of(cls)
+                    result.append(OrderedDict([
+                                   ("name", name),
+                                   ("pk", pk),
+                                   ("properties", properties)
+                                   ]))
+            except:
+                logging(name)
+                raise
+        result.sort(key=lambda v: v['name'])
+        return result
         
         
