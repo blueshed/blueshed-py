@@ -103,7 +103,7 @@ class FetchAndCarryMixin(object):
         
     def _fc_serialize(self, item, values=None):
         if item:
-            meta = next(d for d in self._description if d['name'] == item.__class__.__name__)
+            meta = next(d for d in self._fc_description if d['name'] == item.__class__.__name__)
             if meta:
                 if values:
                     for p in meta['properties'].values():

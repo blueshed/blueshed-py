@@ -34,6 +34,7 @@ class RestHandler(BaseHandler):
                 result = {"result": self.control.fetch(1,resource,id, limit=limit, offset=offset)}
             except Exception as ex:
                 result = {"error": str(ex)}
+                logging.exception(ex)
             self.set_header("Content-Type", "application/json; charset=UTF-8")
             self.write(dumps(result))
         
@@ -56,6 +57,7 @@ class RestHandler(BaseHandler):
             result = {"result": self.control.carry(1,item), "action": "saved" }
         except Exception as ex:
             result = {"error": str(ex)}
+            logging.exception(ex)
         self.set_header("Content-Type", "application/json; charset=UTF-8")
         self.write(dumps(result))
         
@@ -69,6 +71,7 @@ class RestHandler(BaseHandler):
             result = {"result": self.control.carry(1,{"id":-id,"_type":resource}) , "action": "deleted"}
         except Exception as ex:
             result = {"error": str(ex)}
+            logging.exception(ex)
         self.set_header("Content-Type", "application/json; charset=UTF-8")
         self.write(dumps(result))
         
