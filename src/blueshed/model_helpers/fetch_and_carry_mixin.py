@@ -16,6 +16,7 @@ Created on 8 Jul 2015
 import logging
 from collections import OrderedDict
 from sqlalchemy.inspection import inspect
+from sqlalchemy.sql.expression import asc, desc
 
 
 class FetchAndCarryMixin(object):
@@ -25,36 +26,68 @@ class FetchAndCarryMixin(object):
         self._fc_description = self._fc_describe(model.Base)
     
     
-    def fetch(self, accl, type, id=None, attr=None, filter=None, match=None, limit=None, offset=None, order_by=None):
+    def fetch(self, accl, type, id=None, attr=None, 
+              filter=None, match=None, limit=None, offset=None, 
+              order_by=None, order_by_asc=False,
+              depth=0):
         with self.session as session:
             type_ = getattr(self._fc_model,type)
             query = session.query(type_)
             if attr is not None:
                 attr_= getattr(type_,attr)
-                if filter:
-                    query = query.filter(attr_.like("{}%%".format(filter)))
-                    query = query.order_by(attr_)
-                elif match:
-                    query = query.filter(attr==match)
+                if filter or match:
+                    total = query.count()
+                    if filter:
+                        query = query.filter(attr_.like("{}%%".format(filter)))
+                        query = query.order_by(attr_)
+                    elif match:
+                        query = query.filter(attr==match)
+                    filter_total = query.count()
                 elif id:
                     obj = query.get(id)
                     query = getattr(obj, attr)
                     if not hasattr(query, '__iter__'):
-                        if hasattr(query, 'serialize'):
-                            return query.serialize
-                        return query
+                        return {
+                            "type": type,
+                            "id": id,
+                            "attr": attr,
+                            "type": "single",
+                            "value": self._fc_serialize(query,depth=depth)
+                        }
+                    return {
+                        "type": type,
+                        "id": id,
+                        "attr": attr,
+                        "attr_type": "collection",
+                        "value": [self._fc_serialize(item, depth=depth) for item in query]
+                    }
+                limit_query = query.limit(limit or 10).offset(offset or 0)
                 return {
-                    "rows": [self._fc_serialize(item) for item in query] 
+                    "type": "collection",
+                    "total": total,
+                    "filter_total": filter_total,
+                    "offset": offset,
+                    "limit": limit,
+                    "rows": [self._fc_serialize(item, depth=depth) for item in limit_query] 
                 }
             elif id:
-                return self._fc_serialize(query.get(id))
+                return {
+                        "type": type,
+                        "id": id,
+                        "value": self._fc_serialize(query.get(id))
+                        }
             else:
                 total = query.count()
                 if order_by:
-                    query = query.order_by(order_by)
+                    order_by_ = getattr(self._fc_model,order_by)
+                    if order_by_asc is True:
+                        query = query.order_by(asc(order_by_))
+                    else:
+                        query = query.order_by(desc(order_by_))
                 limit_query = query.limit(limit or 10).offset(offset or 0)
                 return {
                         "total": total,
+                        "filter_total": total,
                         "rows": [self._fc_serialize(item) for item in limit_query] 
                        }   
     
@@ -111,7 +144,7 @@ class FetchAndCarryMixin(object):
         return result
         
         
-    def _fc_serialize(self, item, values=None):
+    def _fc_serialize(self, item, values=None, depth=0):
         if item:
             meta = next(d for d in self._fc_description if d['name'] == item.__class__.__name__)
             if meta:

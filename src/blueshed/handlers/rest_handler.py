@@ -36,7 +36,21 @@ class RestHandler(BaseHandler):
                 id = resources[1] if len(resources) > 1 else None
                 limit = int(self.get_argument("limit", 10))
                 offset = int(self.get_argument("offset", 0))
-                result = {"result": self.control.fetch(1,resource,id, limit=limit, offset=offset)}
+                attr = self.get_argument("attr", None)
+                filter = self.get_argument("filter", None)
+                match = self.get_argument("match", None)
+                order_by = self.get_argument("order_by", None)
+                order_by_asc = self.get_argument("order_by_asc", 'false').lower() == "true"
+                depth = int(self.get_argument("depth", 0))
+                result = {"result": self.control.fetch(1,resource,id, 
+                                                       attr=attr,
+                                                       filter=filter,
+                                                       match=match,
+                                                       limit=limit, 
+                                                       offset=offset,
+                                                       order_by=order_by,
+                                                       order_by_asc=order_by_asc,
+                                                       depth=depth)}
             except Exception as ex:
                 result = {"error": str(ex)}
                 logging.exception(ex)
