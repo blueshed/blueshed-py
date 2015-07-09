@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '0.10'
+version = '0.11'
 
 setup(name='blueshed-py',
       version=version,

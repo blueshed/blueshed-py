@@ -16,4 +16,4 @@ from sqlalchemy.sql.sqltypes import String
     you can extend them like this:
 """
 
-Person.token = Column(String(80))
+Person._token = Column(String(80))

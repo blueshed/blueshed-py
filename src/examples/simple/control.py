@@ -23,7 +23,7 @@ class Control(BaseControl,Access,FetchAndCarryMixin):
             utils.create_all(model.Base, self._engine)
             if drop_all==True:
                 with self.session as session:
-                    admin = model.Person(email="admin",_password="admin",token="--foo-bar--")
+                    admin = model.Person(email="admin",_password="admin",_token="--foo-bar--")
                     session.add(admin)
                     admin.permissions.append(model.Permission(name="admin"))
                     admin.permissions.append(model.Permission(name="user"))
@@ -53,3 +53,8 @@ class Control(BaseControl,Access,FetchAndCarryMixin):
 
     def echo(self, accl, message):
         self._broadcast("echo",message)
+    
+        
+    def describe(self, accl):
+        return self._fc_description  
+
