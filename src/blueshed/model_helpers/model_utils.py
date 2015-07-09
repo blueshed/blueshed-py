@@ -11,6 +11,7 @@ from sqlalchemy.sql.schema import MetaData, ForeignKeyConstraint, Table
 from sqlalchemy.sql.ddl import DropConstraint, DropTable
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.sql.expression import and_, or_
+from blueshed.model_helpers.sqla_views import DropView
 
 
 _SESSION_EXTENSIONS_ = []
@@ -74,6 +75,9 @@ def drop_all(session):
     
     for fkc in all_fks:
         session.execute(DropConstraint(fkc))
+        
+    for view_name in inspector.get_view_names():
+        session.execute(DropView(view_name))
     
     for table in tbs:
         session.execute(DropTable(table))

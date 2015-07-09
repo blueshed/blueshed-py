@@ -30,6 +30,13 @@ class Access(object):
             if user is None:
                 raise Exception("No such user")
             self._email_password_(email, user._password)
+            
+            
+    def get_token_user(self, token):
+        with self.control.session as session:
+            user = session.query(model.Person).filter_by(_token=token).first()
+            if user is not None and "api" in [p.name for p in user.permissions]:
+                user.serialize
         
         
     def register(self, accl, email):

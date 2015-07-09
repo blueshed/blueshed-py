@@ -10,6 +10,7 @@ from blueshed.model_helpers import utils
 from examples.simple import model
 import functools
 from blueshed.utils.status import Status
+from sqlalchemy.sql.expression import select
 
 
 class Control(BaseControl,Access,FetchAndCarryMixin):
@@ -23,11 +24,17 @@ class Control(BaseControl,Access,FetchAndCarryMixin):
             utils.create_all(model.Base, self._engine)
             if drop_all==True:
                 with self.session as session:
+                    user_permission = model.Permission(name="user")
                     admin = model.Person(email="admin",_password="admin",_token="--foo-bar--")
                     session.add(admin)
                     admin.permissions.append(model.Permission(name="admin"))
-                    admin.permissions.append(model.Permission(name="user"))
+                    admin.permissions.append(user_permission)
                     admin.permissions.append(model.Permission(name="api"))
+                    
+                    user = model.Person(email="user",_password="user")
+                    session.add(user)
+                    user.permissions.append(user_permission)
+                    
                     session.commit()
         
         # initialize after db created
@@ -56,5 +63,13 @@ class Control(BaseControl,Access,FetchAndCarryMixin):
     
         
     def describe(self, accl):
-        return self._fc_description  
+        return self._fc_description
+    
+    
+    def people_report(self, accl):
+        with self.session as session:
+            q = session.query(model.PersonReport)
+            values = [row._asdict() for row in q]
+            types = [(col.name,col.type) for col in q.statement.columns]
+            return types,values
 

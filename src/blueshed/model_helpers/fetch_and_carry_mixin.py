@@ -31,10 +31,6 @@ class FetchAndCarryMixin(object):
               order_by=None, order_by_asc=False,
               ignore=None, include=None,
               depth=0):
-        logging.info(dict(type=type, id=id, attr=attr, 
-              filter=filter, match=match, limit=limit, offset=offset, 
-              order_by=order_by, order_by_asc=order_by_asc,
-              depth=depth))
         with self.session as session:
             type_ = getattr(self._fc_model,type)
             query = session.query(type_)
