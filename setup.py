@@ -3,14 +3,14 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '0.9'
+version = '0.10'
 
 setup(name='blueshed-py',
       version=version,
       packages=['blueshed'],
       package_dir={'blueshed': 'src/blueshed'},
       include_package_data = True, 
-      exclude_package_data = { '': ['*tests/*'] },
+      exclude_package_data = { '': ['*tests/*','*examples/*'] },
       install_requires = [
         'setuptools',
         'tornado>=4.2',

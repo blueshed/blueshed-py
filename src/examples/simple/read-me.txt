@@ -1,0 +1,11 @@
+To run this you'll need to call: bower init
+in the www/static folder - this will execute the bower.json
+and load all the dependancies.
+
+You'll need to add the blueshed-py/src directory to your PYTHONPATH
+
+    then call python -m simple.web
+    or python web.py
+    
+    to run in debug mode add --debug=yes
+

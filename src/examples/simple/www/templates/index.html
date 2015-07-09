@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>simple</title>
+	<link rel="stylesheet" type="text/css" href="{{ static_url('simple/main-' + mode + '.css') }}" />
+</head>
+<body>
+	<div data-bind="component:{ 
+		 				name: component,
+		 				params:$root.component_params
+		 		    }"></div>
+	<script type="text/javascript" src="{{ static_url('bower_components/requirejs/require.js') }}"></script>
+	<script type="text/javascript" src="{{ static_url('simple/main-' + mode + '.js') }}"></script>
+</body>
+</html>
+

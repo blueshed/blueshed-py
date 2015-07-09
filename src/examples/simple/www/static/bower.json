@@ -1,0 +1,27 @@
+{
+  "name": "simple",
+  "version": "0.0.1",
+  "homepage": "https://github.com/blueshed/blueshed-py",
+  "authors": [
+    "Peter Bunyan <pete@blueshed.co.uk>"
+  ],
+  "description": "an example of blueshed-py and blueshed-js",
+  "keywords": [
+    "tornado",
+    "sqlqlchemy",
+    "require",
+    "knockout",
+    "websockets"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "blueshed-js": "*"
+  }
+}
