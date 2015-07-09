@@ -1,0 +1,88 @@
+# install python 3.4
+#	https://www.python.org/downloads/release/python-340/
+#
+# create a folder
+
+	mkdir hello
+	cd hello
+
+# create a virtual environment
+	
+	pyvenv-3.4 venv
+
+# activate it
+	
+	. venv/bin/activate
+
+# install blueshed
+
+	pip install git+http://github.com/blueshed/blueshed-py.git --upgrade
+	
+# create a requirements.txt for heroku
+
+	pip freeze > requirements.txt
+
+	#
+	#	you'll need to edit the requirements.txt to point blueshed to github
+	#
+	#	git+git://github.com/blueshed/blueshed-py.git#egg=blueshed
+	#
+
+# pull blueshed from git to copy the example/simple folder
+
+	git clone https://github.com/blueshed/blueshed-py.git
+	
+# copy examples to the root folder
+
+	mkdir examples
+	cp -r blueshed-py/src/examples/* examples
+	
+# bower install the examples/simple/www/static bower.json
+
+	cd examples/simple/www/static
+	bower install
+	
+# come back to root
+
+	cd ../../../../
+	
+# test run:
+	
+	python -m examples.simple.web --debug=yes
+	
+# You should see:
+# Hello World, again!
+# Status: Connected
+
+# tidy up and prepare for heroku
+
+	rm -rf blueshed-py
+
+# You'll need a runtime.txt & proc file for heroku
+
+	echo 'python-3.4.2' > runtime.txt
+	echo 'web: python -m examples.simple.web' > Procfile
+
+# You'll need a git repo
+	
+	git init
+	
+# You'll need to git ignore venv
+# You'll need to git ignore *.db because your test uses sqlite!
+
+	echo $'__pycache__/\n*.pyc\n*.db\nvenv\nnohup.out\n.project\n.pydevproject\n' > .gitignore
+	
+# And a readme!
+
+	echo $'# hello\nheroku bound tornado fun....' > README.md
+	
+	git add .
+	git commit -m 'First pass'
+	git remote add origin remote repository URL
+	git push origin master
+	
+# You'll need a dev branch
+
+# You'll need a heroku dyno
+# You'll need a ClearDB
+# You'll need to point the dyno to the git repo master
