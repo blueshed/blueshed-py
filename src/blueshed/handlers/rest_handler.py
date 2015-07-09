@@ -4,7 +4,7 @@ Created on 12 Feb 2014
 @author: peterb
 '''
 import logging
-from blueshed.utils.utils import dumps, loads
+from blueshed.utils.utils import loads, dumps
 from blueshed.handlers.base_handler import BaseHandler
 
 

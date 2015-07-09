@@ -57,6 +57,11 @@
 # tidy up and prepare for heroku
 
 	rm -rf blueshed-py
+	
+# you'll also need to remove some gitignores
+	
+	rm examples/simple/.gitignore
+	rm examples/simple/www/static/.gitignore
 
 # You'll need a runtime.txt & proc file for heroku
 
