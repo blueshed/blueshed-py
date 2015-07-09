@@ -29,7 +29,12 @@ class FetchAndCarryMixin(object):
     def fetch(self, accl, type, id=None, attr=None, 
               filter=None, match=None, limit=None, offset=None, 
               order_by=None, order_by_asc=False,
+              ignore=None, include=None,
               depth=0):
+        logging.info(dict(type=type, id=id, attr=attr, 
+              filter=filter, match=match, limit=limit, offset=offset, 
+              order_by=order_by, order_by_asc=order_by_asc,
+              depth=depth))
         with self.session as session:
             type_ = getattr(self._fc_model,type)
             query = session.query(type_)
@@ -52,14 +57,20 @@ class FetchAndCarryMixin(object):
                             "id": id,
                             "attr": attr,
                             "type": "single",
-                            "value": self._fc_serialize(query,depth=depth)
+                            "value": self._fc_serialize(query,
+                                                        depth=depth,
+                                                        ignore=ignore,
+                                                        include=include)
                         }
                     return {
                         "type": type,
                         "id": id,
                         "attr": attr,
                         "attr_type": "collection",
-                        "value": [self._fc_serialize(item, depth=depth) for item in query]
+                        "value": [self._fc_serialize(item,
+                                                     depth=depth,
+                                                     ignore=ignore,
+                                                     include=include) for item in query]
                     }
                 limit_query = query.limit(limit or 10).offset(offset or 0)
                 return {
@@ -68,13 +79,19 @@ class FetchAndCarryMixin(object):
                     "filter_total": filter_total,
                     "offset": offset,
                     "limit": limit,
-                    "rows": [self._fc_serialize(item, depth=depth) for item in limit_query] 
+                    "rows": [self._fc_serialize(item,
+                                                depth=depth,
+                                                ignore=ignore,
+                                                include=include) for item in limit_query] 
                 }
             elif id:
                 return {
                         "type": type,
                         "id": id,
-                        "value": self._fc_serialize(query.get(id))
+                        "value": self._fc_serialize(query.get(id),
+                                                    depth=depth,
+                                                    ignore=ignore,
+                                                    include=include)
                         }
             else:
                 total = query.count()
@@ -88,7 +105,10 @@ class FetchAndCarryMixin(object):
                 return {
                         "total": total,
                         "filter_total": total,
-                        "rows": [self._fc_serialize(item) for item in limit_query] 
+                        "rows": [self._fc_serialize(item,
+                                                    depth=depth,
+                                                    ignore=ignore,
+                                                    include=include) for item in limit_query] 
                        }   
     
     
@@ -144,7 +164,7 @@ class FetchAndCarryMixin(object):
         return result
         
         
-    def _fc_serialize(self, item, values=None, depth=0):
+    def _fc_serialize(self, item, values=None, depth=0, ignore=None, include=None):
         if item:
             meta = next(d for d in self._fc_description if d['name'] == item.__class__.__name__)
             if meta:
@@ -159,8 +179,38 @@ class FetchAndCarryMixin(object):
                                 logging.info("setting: %s=%r",name,value)
                                 setattr(item,name,value)
                 else:
+                    ignore = ignore if ignore else []
                     values = [(n['name'],getattr(item,n['name'])) for n in meta['properties'].values()\
-                               if n['attr'][0] is not "_" and n['attr'] in ['column','hybrid','pk']]
+                               if n['name'][0] is not "_" and\
+                                  n['name'] not in ignore and\
+                                  n['attr'] in ['column','hybrid','pk']]
+                    if depth > 0:
+                        for n in meta['properties'].values():
+                            if n['name'][0] is not "_" and\
+                               n['name'] not in ignore and\
+                               n.get('direction') == 'MANYTOONE':
+                                rel = getattr(item, n["name"])
+                                values.append((n['name'],
+                                               self._fc_serialize(rel, 
+                                                                  depth=depth-1, 
+                                                                  ignore=[n.get("backref")])))
+                    if include:
+                        for n in include:
+                            p = meta['properties'].get(n)
+                            if p:
+                                value = getattr(item, n)
+                                if p.get("direction") == "MANYTOONE":
+                                    values.append((n,
+                                                   self._fc_serialize(value, 
+                                                                      depth=depth-1, 
+                                                                      ignore=[p.get("backref")])))
+                                elif p.get("direction") in ["ONETOMANY","MANYTOMANY"]:
+                                    values.append((n,
+                                                   [self._fc_serialize(v, 
+                                                                      depth=depth-1, 
+                                                                      ignore=[p.get("backref")]) for v in value]))
+                                else:
+                                    values.append((n,value))
                     values.append(("_type",meta['name']))
                     item = OrderedDict(values)
         return item

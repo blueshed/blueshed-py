@@ -42,6 +42,12 @@ class RestHandler(BaseHandler):
                 order_by = self.get_argument("order_by", None)
                 order_by_asc = self.get_argument("order_by_asc", 'false').lower() == "true"
                 depth = int(self.get_argument("depth", 0))
+                ignore = self.get_argument("ignore",None)
+                include = self.get_argument("include",None)
+                if ignore:
+                    ignore = ignore.split(",")
+                if include:
+                    include = include.split(",")
                 result = {"result": self.control.fetch(1,resource,id, 
                                                        attr=attr,
                                                        filter=filter,
@@ -50,7 +56,9 @@ class RestHandler(BaseHandler):
                                                        offset=offset,
                                                        order_by=order_by,
                                                        order_by_asc=order_by_asc,
-                                                       depth=depth)}
+                                                       depth=depth,
+                                                       ignore=ignore,
+                                                       include=include)}
             except Exception as ex:
                 result = {"error": str(ex)}
                 logging.exception(ex)
