@@ -51,13 +51,7 @@ class FetchAndCarryMixin(object):
                         # loading attribute with offset and limit requires order_by
                         query = query.options(subqueryload(attr_))
                         query = query.filter(type_.id==id)
-                        order_by_ = getattr(type_,order_by) if order_by else type_.id
-                        if order_by_asc is True:
-                            query = query.order_by(asc(order_by_))
-                        else:
-                            query = query.order_by(desc(order_by_))
-                        total = query.count()
-                        limit_query = query.limit(limit or 10).offset(offset or 0)
+                        total, limit_query = self._order_by_query(query, type_, order_by, order_by_asc, limit, offset)
                         logging.debug(limit_query)
                         items = getattr(limit_query.first(),attr)
                         return {
@@ -98,13 +92,7 @@ class FetchAndCarryMixin(object):
                     elif match:
                         logging.debug("loading matching %s=%r",attr,match)
                         query = query.filter(attr_==match)
-                    filter_total = query.count()
-                order_by_ = getattr(type_,order_by) if order_by else type_.id
-                if order_by_asc is True:
-                    query = query.order_by(asc(order_by_))
-                else:
-                    query = query.order_by(desc(order_by_))
-                limit_query = query.limit(limit or 10).offset(offset or 0)
+                filter_total, limit_query = self._order_by_query(query, type_, order_by, order_by_asc, limit, offset)
                 return {
                     "kind": "collection",
                     "type": type,
@@ -128,13 +116,7 @@ class FetchAndCarryMixin(object):
                                                     include=include)
                         }
             else:
-                total = query.count()
-                order_by_ = getattr(type_,order_by) if order_by else type_.id
-                if order_by_asc is True:
-                    query = query.order_by(asc(order_by_))
-                else:
-                    query = query.order_by(desc(order_by_))
-                limit_query = query.limit(limit or 10).offset(offset or 0)
+                total, limit_query = self._order_by_query(query, type_, order_by, order_by_asc, limit, offset)
                 return {
                         "kind": "collection",
                         "type": type,
@@ -145,8 +127,8 @@ class FetchAndCarryMixin(object):
                         "rows": [self._fc_serialize(item,
                                                     depth=depth,
                                                     ignore=ignore,
-                                                    include=include) for item in limit_query] 
-                       }   
+                                                    include=include) for item in limit_query]
+                        }
     
     
     def carry(self, accl, item, to_add=None, to_remove=None):
@@ -199,7 +181,17 @@ class FetchAndCarryMixin(object):
         for signal, message in to_broadcast:
             self._broadcast_on_success(signal, message)
         return result
-        
+    
+    
+    def _order_by_query(self, query, type_, order_by, order_by_asc, limit=10, offset=0):
+        order_by_ = getattr(type_,order_by) if order_by else type_.id
+        if order_by_asc is not False:
+            query = query.order_by(asc(order_by_))
+        else:
+            query = query.order_by(desc(order_by_))
+        total = query.count()
+        return total, query.limit(limit or 10).offset(offset or 0) 
+    
         
     def _fc_serialize(self, item, values=None, depth=0, ignore=None, include=None):
         if item:
