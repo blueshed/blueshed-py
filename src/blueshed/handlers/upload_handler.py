@@ -43,7 +43,6 @@ class UploadHandler(StaticFileHandler):
                         fname = "%s_%s%s" % (fActual,fNo,fExt)
                     
                     file_path = os.path.join(root,fname)
-                    print(file_path, self.root)
                     logging.info("uploading %s", file_path)
                     with open(file_path,'wb') as fh:
                         fh.write(fileinfo['body'])

@@ -80,13 +80,14 @@ class RestHandler(BaseHandler):
             id = int(resources[1]) if len(resources) > 1 else None
             item = self.json_args
             item["_type"] = resource
-            item["id"] = id
             result = {"result": self.control.carry(1,item), "action": "saved" }
         except Exception as ex:
             result = {"error": str(ex)}
+            self.control._flush(ex)
             logging.exception(ex)
         self.set_header("Content-Type", "application/json; charset=UTF-8")
         self.write(dumps(result))
+        self.control._flush()
         
         
     def delete(self, resource_path):

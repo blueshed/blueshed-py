@@ -31,6 +31,11 @@ class FetchAndCarryMixin(object):
               order_by=None, order_by_asc=False,
               ignore=None, include=None,
               depth=0):
+        logging.info(dict(type=type, id=id, attr=attr, 
+              filter=filter, match=match, limit=limit, offset=offset, 
+              order_by=order_by, order_by_asc=order_by_asc,
+              depth=depth,ignore=ignore,include=include))
+        depth =  0 if depth is None else depth
         with self.session as session:
             type_ = getattr(self._fc_model,type)
             query = session.query(type_)
@@ -42,10 +47,12 @@ class FetchAndCarryMixin(object):
                         query = query.filter(attr_.like("{}%%".format(filter)))
                         query = query.order_by(attr_)
                     elif match:
-                        query = query.filter(attr==match)
+                        query = query.filter(attr_==match)
                     filter_total = query.count()
                 elif id:
                     obj = query.get(id)
+                    if obj is None:
+                        raise Exception("No such object")
                     query = getattr(obj, attr)
                     if not hasattr(query, '__iter__'):
                         return {
@@ -91,8 +98,8 @@ class FetchAndCarryMixin(object):
                         }
             else:
                 total = query.count()
-                if order_by:
-                    order_by_ = getattr(self._fc_model,order_by)
+                if order_by is not None:
+                    order_by_ = getattr(type_,order_by)
                     if order_by_asc is True:
                         query = query.order_by(asc(order_by_))
                     else:
@@ -131,7 +138,7 @@ class FetchAndCarryMixin(object):
                         to_broadcast.append("removed",{ "target": surrogate, "item":[attr, type_, id_] })
                 
             type_ = getattr(self._fc_model,item["_type"])
-            id_ = item["id"]
+            id_ = item.get("id")
             if id_:
                 obj = session.query(type_).get(abs(id_))
                 if id_ < 0:
