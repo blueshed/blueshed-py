@@ -17,6 +17,7 @@ import logging
 from collections import OrderedDict
 from sqlalchemy.inspection import inspect
 from sqlalchemy.sql.expression import asc, desc
+from sqlalchemy.orm import subqueryload
 
 
 class FetchAndCarryMixin(object):
@@ -31,53 +32,82 @@ class FetchAndCarryMixin(object):
               order_by=None, order_by_asc=False,
               ignore=None, include=None,
               depth=0):
-        logging.info(dict(type=type, id=id, attr=attr, 
+        logging.debug(dict(type=type, id=id, attr=attr, 
               filter=filter, match=match, limit=limit, offset=offset, 
               order_by=order_by, order_by_asc=order_by_asc,
               depth=depth,ignore=ignore,include=include))
         depth =  0 if depth is None else depth
         with self.session as session:
+            logging.debug("loading type %s",type)
             type_ = getattr(self._fc_model,type)
             query = session.query(type_)
             if attr is not None:
+                logging.debug("loading attribute %s",attr)
                 attr_= getattr(type_,attr)
-                if filter or match:
-                    total = query.count()
-                    if filter:
-                        query = query.filter(attr_.like("{}%%".format(filter)))
-                        query = query.order_by(attr_)
-                    elif match:
-                        query = query.filter(attr_==match)
-                    filter_total = query.count()
-                elif id:
-                    obj = query.get(id)
-                    if obj is None:
-                        raise Exception("No such object")
-                    query = getattr(obj, attr)
-                    if not hasattr(query, '__iter__'):
+                if id:
+                    property_ = self._fc_get_property_description(type,attr)
+                    if property_.get("direction") in ["MANYTOMANY","ONETOMANY"]:
+                        logging.debug("loading relation %s",attr)
+                        # loading attribute with offset and limit requires order_by
+                        query = query.options(subqueryload(attr_))
+                        query = query.filter(type_.id==id)
+                        order_by_ = getattr(type_,order_by) if order_by else type_.id
+                        if order_by_asc is True:
+                            query = query.order_by(asc(order_by_))
+                        else:
+                            query = query.order_by(desc(order_by_))
+                        total = query.count()
+                        limit_query = query.limit(limit or 10).offset(offset or 0)
+                        logging.debug(limit_query)
+                        items = getattr(limit_query.first(),attr)
                         return {
+                            "kind": "collection",
+                            "type": property_['type'],
+                            "total": total,
+                            "filter_total": total,
+                            "offset": offset,
+                            "limit": limit,
+                            "rows": [self._fc_serialize(item,
+                                                         depth=depth,
+                                                         ignore=ignore,
+                                                         include=include) for item in items]
+                        }
+                    else:
+                        logging.debug("loading attribute %s",attr)
+                        obj = query.get(id)
+                        if obj is None:
+                            raise Exception("No such object")
+                        query = getattr(obj, attr)
+                        return {
+                            "kind": "attribute",
                             "type": type,
                             "id": id,
                             "attr": attr,
-                            "type": "single",
                             "value": self._fc_serialize(query,
                                                         depth=depth,
                                                         ignore=ignore,
                                                         include=include)
                         }
-                    return {
-                        "type": type,
-                        "id": id,
-                        "attr": attr,
-                        "attr_type": "collection",
-                        "value": [self._fc_serialize(item,
-                                                     depth=depth,
-                                                     ignore=ignore,
-                                                     include=include) for item in query]
-                    }
+                logging.debug("loading collection %s",attr)
+                if filter or match:
+                    total = query.count()
+                    if filter:
+                        logging.debug("loading filtering %s=%s%%",attr,filter)
+                        query = query.filter(attr_.like("{}%%".format(filter)))
+                        query = query.order_by(attr_)
+                    elif match:
+                        logging.debug("loading matching %s=%r",attr,match)
+                        query = query.filter(attr_==match)
+                    filter_total = query.count()
+                order_by_ = getattr(type_,order_by) if order_by else type_.id
+                if order_by_asc is True:
+                    query = query.order_by(asc(order_by_))
+                else:
+                    query = query.order_by(desc(order_by_))
                 limit_query = query.limit(limit or 10).offset(offset or 0)
                 return {
-                    "type": "collection",
+                    "kind": "collection",
+                    "type": type,
                     "total": total,
                     "filter_total": filter_total,
                     "offset": offset,
@@ -89,6 +119,7 @@ class FetchAndCarryMixin(object):
                 }
             elif id:
                 return {
+                        "kind": "instance",
                         "type": type,
                         "id": id,
                         "value": self._fc_serialize(query.get(id),
@@ -98,16 +129,19 @@ class FetchAndCarryMixin(object):
                         }
             else:
                 total = query.count()
-                if order_by is not None:
-                    order_by_ = getattr(type_,order_by)
-                    if order_by_asc is True:
-                        query = query.order_by(asc(order_by_))
-                    else:
-                        query = query.order_by(desc(order_by_))
+                order_by_ = getattr(type_,order_by) if order_by else type_.id
+                if order_by_asc is True:
+                    query = query.order_by(asc(order_by_))
+                else:
+                    query = query.order_by(desc(order_by_))
                 limit_query = query.limit(limit or 10).offset(offset or 0)
                 return {
+                        "kind": "collection",
+                        "type": type,
                         "total": total,
                         "filter_total": total,
+                        "offset": offset,
+                        "limit": limit,
                         "rows": [self._fc_serialize(item,
                                                     depth=depth,
                                                     ignore=ignore,
@@ -116,7 +150,7 @@ class FetchAndCarryMixin(object):
     
     
     def carry(self, accl, item, to_add=None, to_remove=None):
-        logging.info(item)
+        logging.debug(item)
         result = None
         to_broadcast = []
         with self.session as session:
@@ -179,7 +213,7 @@ class FetchAndCarryMixin(object):
                            p["attr"][0] is not "_" and \
                            p["attr"] in ["column","hybrid"]:
                                 value = values[name]
-                                logging.info("setting: %s=%r",name,value)
+                                logging.debug("setting: %s=%r",name,value)
                                 setattr(item,name,value)
                 else:
                     ignore = ignore if ignore else []
@@ -219,7 +253,14 @@ class FetchAndCarryMixin(object):
         return item
  
  
- 
+    def _fc_get_property_description(self, type_name, property_name):
+        for type_ in self._fc_description:
+            if type_["name"] == type_name:
+                if property_name:
+                    return type_["properties"].get(property_name)
+                return property
+        
+        
     def _fc_properties_of(self, cls):
         b = inspect(cls)
         pk = b.primary_key[0]
