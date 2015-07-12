@@ -43,7 +43,8 @@ class WebsocketHandler(websocket.WebSocketHandler):
             self.broadcast({
                             "signal":"user",
                             "message": user,
-                            "ws_version": self.application.settings.get('ws_version',1)
+                            "ws_version": self.application.settings.get('ws_version',1),
+                            "model": self.control.describe(self.current_user)
                             })
         else:
             self.write_message(utils.dumps({'access_error':True}))

@@ -1,0 +1,260 @@
+[
+  {
+    "name": "History",
+    "attrs": [
+      {
+        "name": "person",
+        "type": "Person",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": "history",
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      },
+      {
+        "name": "step",
+        "type": "Step",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": "history",
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      },
+      {
+        "name": "service",
+        "type": "Service",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": "history",
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      },
+      {
+        "name": "action",
+        "type": "Enum",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": "added,removed",
+        "backref": null,
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      },
+      {
+        "name": "created",
+        "type": "Datetime",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": null,
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      }
+    ]
+  },
+  {
+    "name": "Permission",
+    "attrs": [
+      {
+        "name": "name",
+        "type": "String",
+        "size": "80",
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": null,
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      }
+    ]
+  },
+  {
+    "name": "Person",
+    "attrs": [
+      {
+        "name": "email",
+        "type": "String",
+        "size": "128",
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": null,
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      },
+      {
+        "name": "_password",
+        "type": "String",
+        "size": "80",
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": null,
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      },
+      {
+        "name": "name",
+        "type": "String",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": null,
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      },
+      {
+        "name": "permissions",
+        "type": "Permission",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": null,
+        "m2m": true,
+        "nullable": true,
+        "is_m2m": true
+      },
+      {
+        "name": "requirements",
+        "type": "Service",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": "people",
+        "m2m": true,
+        "nullable": true,
+        "is_m2m": true
+      },
+      {
+        "name": "fullfilments",
+        "type": "Step",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": "people",
+        "m2m": true,
+        "nullable": true,
+        "is_m2m": true
+      }
+    ]
+  },
+  {
+    "name": "Service",
+    "attrs": [
+      {
+        "name": "name",
+        "type": "String",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": null,
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      },
+      {
+        "name": "system",
+        "type": "System",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": "services",
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      },
+      {
+        "name": "grant_steps",
+        "type": "Step",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": "grant_services",
+        "m2m": true,
+        "nullable": true,
+        "is_m2m": true
+      },
+      {
+        "name": "revoke_steps",
+        "type": "Step",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": "revoke_services",
+        "m2m": true,
+        "nullable": true,
+        "is_m2m": true
+      }
+    ]
+  },
+  {
+    "name": "Step",
+    "attrs": [
+      {
+        "name": "name",
+        "type": "String",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": null,
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      },
+      {
+        "name": "prerequisit",
+        "type": "Step",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": null,
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      }
+    ]
+  },
+  {
+    "name": "System",
+    "attrs": [
+      {
+        "name": "name",
+        "type": "String",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": null,
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      }
+    ]
+  }
+]

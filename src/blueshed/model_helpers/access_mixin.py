@@ -33,10 +33,10 @@ class Access(object):
             
             
     def get_token_user(self, token):
-        with self.control.session as session:
+        with self.session as session:
             user = session.query(model.Person).filter_by(_token=token).first()
             if user is not None and "api" in [p.name for p in user.permissions]:
-                user.serialize
+                return user.serialize
         
         
     def register(self, accl, email):

@@ -20,7 +20,7 @@ from blueshed.handlers.login_handler import LoginHandler
 from blueshed.handlers.logout_handler import LogoutHandler
 from blueshed.handlers.index_handler import IndexHandler
 from blueshed.handlers.websocket_handler import WebsocketHandler
-from blueshed.handlers.rest_handler import RestHandler
+from blueshed.handlers.auth_rest_handler import RestHandler
 
 
 define("port", 8080, int, help="port to listen on")
@@ -48,7 +48,7 @@ def main():
         (r"/websocket", WebsocketHandler),
         (r"/login(.*)", LoginHandler),
         (r"/logout", LogoutHandler),
-        (r"/rest/(.*)", RestHandler),
+        (r"/rest/(.*)", RestHandler,{"auth_header":'simple-auth-token'}),
         (r"/", IndexHandler),
     ]
     settings = {

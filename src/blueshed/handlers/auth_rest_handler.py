@@ -9,8 +9,12 @@ from tornado.web import HTTPError
 
 class RestHandler(BaseHandler):
     
+    def initialize(self, auth_header='blueshed-auth-token'):
+        self.auth_header = auth_header 
+        BaseHandler.initialize(self)
+    
     def authenticate(self):
-        token = self.request.headers.get('blueshed-auth-token')
+        token = self.request.headers.get(self.auth_header)
         if token is None:
             raise HTTPError(403)
         user = self.control.get_token_user(token)

@@ -3,14 +3,18 @@ Created on 8 Jul 2015
 
 @author: peterb
 '''
+from pkg_resources import resource_filename  # @UnresolvedImport
 from blueshed.model_helpers.access_mixin import Access
 from blueshed.model_helpers.base_control import BaseControl
 from blueshed.model_helpers.fetch_and_carry_mixin import FetchAndCarryMixin
 from blueshed.model_helpers import utils
-from examples.simple import model
+import examples.simple.model as replaceable_model
+import examples.simple.model_ext as model
 import functools
 from blueshed.utils.status import Status
 from sqlalchemy.sql.expression import select
+import inspect
+import os
 
 
 class Control(BaseControl,Access,FetchAndCarryMixin):
@@ -21,21 +25,23 @@ class Control(BaseControl,Access,FetchAndCarryMixin):
         if drop_all is True:
             with self.session as session:
                 utils.drop_all(session)
-            utils.create_all(model.Base, self._engine)
-            if drop_all==True:
-                with self.session as session:
-                    user_permission = model.Permission(name="user")
-                    admin = model.Person(email="admin",_password="admin",_token="--foo-bar--")
-                    session.add(admin)
-                    admin.permissions.append(model.Permission(name="admin"))
-                    admin.permissions.append(user_permission)
-                    admin.permissions.append(model.Permission(name="api"))
-                    
-                    user = model.Person(email="user",_password="user")
-                    session.add(user)
-                    user.permissions.append(user_permission)
-                    
-                    session.commit()
+        
+        utils.create_all(model.Base, self._engine)
+            
+        with self.session as session:
+            if session.query(model.Permission).get(1) is None:
+                user_permission = model.Permission(name="user")
+                admin = model.Person(email="admin",_password="admin",_token="--foo-bar--")
+                session.add(admin)
+                admin.permissions.append(model.Permission(name="admin"))
+                admin.permissions.append(user_permission)
+                admin.permissions.append(model.Permission(name="api"))
+                
+                user = model.Person(email="user",_password="user")
+                session.add(user)
+                user.permissions.append(user_permission)
+                
+                session.commit()
         
         # initialize after db created
         FetchAndCarryMixin.__init__(self, model)
@@ -73,3 +79,23 @@ class Control(BaseControl,Access,FetchAndCarryMixin):
             types = [(col.name,col.type) for col in q.statement.columns]
             return types,values
 
+        
+    def save_model(self, accl, json_model, sqla_model):
+        with open("model.json","w") as file:
+            file.write(json_model)
+        model_path = os.path.join(os.path.dirname(inspect.getfile(replaceable_model)),"model.py")
+        with open("model.py.bak","wb") as pybackup:
+            with open(model_path,"rb") as pymodel:
+                pybackup.write(pymodel.read())
+#         should be a callback to main loop!
+        with open(model_path,"w") as pymodel:
+            pymodel.write(sqla_model)
+            
+            
+    def fetch_model(self, accl):
+        if os.path.isfile("model.json"):
+            with open("model.json","r") as file:
+                return file.read()
+        
+            
+    

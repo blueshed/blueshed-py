@@ -287,7 +287,17 @@ class FetchAndCarryMixin(object):
                  ("read_only", read_only),
                  ("fkey", len(attr.columns[0].foreign_keys) > 0),
                  ("info", attr.info),
-                 ("doc", attr.doc)
+                 ("doc", attr.doc),
+                 ("sa", OrderedDict([
+                     ("is_clause_element", attr.is_clause_element),
+                     ("is_instance", attr.is_instance),
+                     ("is_mapper", attr.is_mapper),
+                     ("is_property", attr.is_property),
+                     ("is_selectable", attr.is_selectable),
+                     ("is_attribute", attr.is_attribute),
+                     ("is_aliased_class", attr.is_aliased_class),
+                     ("extension_type", attr.extension_type)
+                     ])),
                  ])
             result[key]= p
         for key in b.synonyms.keys():

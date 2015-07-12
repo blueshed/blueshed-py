@@ -1,6 +1,6 @@
 {
   "name": "simple",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "homepage": "https://github.com/blueshed/blueshed-py",
   "authors": [
     "Peter Bunyan <pete@blueshed.co.uk>"
@@ -20,8 +20,5 @@
     "bower_components",
     "test",
     "tests"
-  ],
-  "dependencies": {
-    "blueshed-js": "*"
-  }
+  ]
 }

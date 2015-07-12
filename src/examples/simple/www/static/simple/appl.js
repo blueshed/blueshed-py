@@ -1,20 +1,25 @@
 
 define(
-	["jquery",
-	 "knockout",
-     "blueshed/appl",
+	["knockout",
+     "blueshed/main",
      "blueshed/connection",
-     "blueshed/routes",
+     "blueshed/components/inspector/store",
+     "blueshed/components/inspector/main",
+     "blueshed/components/modeling/main",
      "components/hello/main"], 
      
-	function ($, ko, Appl, Connection, Routes, Hello) {
+	function (ko, Appl, Connection, Store,
+			  InspectorPanel, ModelingPanel, Hello) {
     	'use strict';
 
-        ko.components.register("hello",Hello);    	
+        ko.components.register("hello",Hello);   
+        ko.components.register("inspector-panel",InspectorPanel);
+        ko.components.register("modeling-panel",ModelingPanel); 	
         
     	Appl.prototype.init = function(){
             this.title("Simple");
 			this.connection = new Connection();
+			this.store = new Store(this.connection);
 			this.service_status = ko.observable();
 			this.loading = ko.observable(false);
 			this.user = ko.observable();
@@ -30,6 +35,7 @@ define(
 						}
 					}
 					msg.message.permissions = ko.observableArray(msg.message.permissions);
+					this.store.init(msg.model);
 					this.user(msg.message);
 				} else if(msg.signal == "user updated"){
 					if(ko.unwrap(this.user().id)==msg.message.id){
@@ -51,7 +57,7 @@ define(
 			},this);
 
             this.loading(true);
-            this.routes = new Routes(this);
+            this.init_routes();
             this.routes.set_default(
             	this.routes.add_to_left_menu({
     				route:"hello",    // the name to pass to hasher
@@ -64,6 +70,8 @@ define(
     		        	this.component("hello");
     		        }.bind(this)
     			}));
+            this.add_service_menu("Inspector","inspector-panel","inspector/:id:","","#/inspector");
+            this.add_service_menu("Modeling","modeling-panel","modeling/:id:","","#/modeling");
     	}
     	
 		var next_start = Appl.prototype.start;
@@ -85,6 +93,19 @@ define(
 				}
 			}
 			return false;
+		};
+		
+		Appl.prototype.save_model = function(json_model, sqla_model){
+			this.connection.send({
+				action: "save_model",
+				args:{json_model:json_model,sqla_model:sqla_model}
+			},function(response){
+				if(response.error){
+					this.error(response.error);
+					return;
+				}
+				this.ws_version = -1; // will reload on reconnect
+			}.bind(this));
 		};
 
     	return Appl;

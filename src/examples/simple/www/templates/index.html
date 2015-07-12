@@ -1,17 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="utf-8" />
-	<title>simple</title>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="a python tornado appl">
+    <meta name="author" content="Peter Bunyan">
+	<title>Simple</title>
 	<link rel="stylesheet" type="text/css" href="{{ static_url('simple/main-' + mode + '.css') }}" />
+    <!-- Fav and touch icons -->
+    <link rel="shortcut icon" href="{{ static_url('images/ico/favicon.png') }}">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{{ static_url('images/ico/apple-touch-icon-144-precomposed.png') }}" />
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{{ static_url('images/ico/apple-touch-icon-114-precomposed.png') }}" />
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{{ static_url('images/ico/apple-touch-icon-72-precomposed.png') }}" />
+    <link rel="apple-touch-icon-precomposed" href="{{ static_url('images/ico/apple-touch-icon-57-precomposed.png') }}" />
+    <link rel="apple-touch-startup-image" href="{{ static_url('images/ico/startup.png') }}" />
 </head>
 <body>
-	<div data-bind="component:{ 
-		 				name: component,
-		 				params:$root.component_params
-		 		    }"></div>
+	<blue-menu-bar params="appl:$root"></blue-menu-bar>
+	<div class="container" data-bind="if:component" style="margin-top:60px;">
+		<blue-error params="error:error"></blue-error>
+        <!-- ko if:$root.user -->
+		<div data-bind="component:{ 
+			 				name: component,
+			 				params:$root.component_params
+			 		    }"></div>
+        <!-- /ko -->
+	</div>
+    <div data-bind="visible:false">
+        <div style="width:420px;margin-left:auto;margin-right:auto;margin-top:240px;opacity:0.9;text-align:center;">
+            <h1> 
+                <img src="{{ static_url('images/ico/apple-touch-icon-57-precomposed.png') }}" style="height:1em;"> 
+                Simple
+            </h1>
+            <i class="fa fa-spinner fa-pulse fa-5x text-allercate"></i>
+        </div>
+    </div>
+	
 	<script type="text/javascript" src="{{ static_url('bower_components/requirejs/require.js') }}"></script>
 	<script type="text/javascript" src="{{ static_url('simple/main-' + mode + '.js') }}"></script>
 </body>
 </html>
-
