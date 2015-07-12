@@ -79,6 +79,8 @@ class RestHandler(BaseHandler):
             resource = resources[0]
             id = int(resources[1]) if len(resources) > 1 else None
             item = self.json_args
+            if resource is "":
+                raise Exception("No resource specified")
             item["_type"] = resource
             result = {"result": self.control.carry(1,item), "action": "saved" }
         except Exception as ex:

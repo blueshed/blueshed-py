@@ -18,6 +18,7 @@ from collections import OrderedDict
 from sqlalchemy.inspection import inspect
 from sqlalchemy.sql.expression import asc, desc
 from sqlalchemy.orm import subqueryload
+from blueshed.utils.utils import dumps, loads
 
 
 class FetchAndCarryMixin(object):
@@ -209,10 +210,20 @@ class FetchAndCarryMixin(object):
                                 setattr(item,name,value)
                 else:
                     ignore = ignore if ignore else []
-                    values = [(n['name'],getattr(item,n['name'])) for n in meta['properties'].values()\
-                               if n['name'][0] is not "_" and\
-                                  n['name'] not in ignore and\
-                                  n['attr'] in ['column','hybrid','pk']]
+                    values = []
+                    for n in meta['properties'].values():
+                        k = n['name']
+                        if k[0] is "_" or k in ignore: continue
+                        v = getattr(item,k)
+                        if v and n['attr'] in ["column","pk"]:
+                            values.append((k,v))
+                        elif v and n['attr'] in ['hybrid']:  #who knows how to get values?
+                            if not hasattr(v, "strip") and hasattr(v, "__getitem__"):
+                                values.append((k,OrderedDict(v)))
+                            elif not hasattr(v, "strip") and hasattr(v, "__iter__"):
+                                values.append((k,list(v)))
+                            else:
+                                values.append((k,v))
                     if depth > 0:
                         for n in meta['properties'].values():
                             if n['name'][0] is not "_" and\
@@ -262,17 +273,20 @@ class FetchAndCarryMixin(object):
                  ("attr", "pk"),
                  ("type", pk.type.__class__.__name__),
                  ("read_only", True),
+                 ("info", {}),
                  ("doc", pk.doc)
                  ])
         for key in b.column_attrs.keys():
             if key == pk.name or  key[0] == "_": continue
             attr = b.column_attrs[key]
+            read_only = attr.info.get("read-only",False)
             p = OrderedDict([
                  ("name", key), 
                  ("attr", "column"),
                  ("type", attr.columns[0].type.__class__.__name__),
-                 ("read_only", False),
+                 ("read_only", read_only),
                  ("fkey", len(attr.columns[0].foreign_keys) > 0),
+                 ("info", attr.info),
                  ("doc", attr.doc)
                  ])
             result[key]= p
@@ -284,6 +298,7 @@ class FetchAndCarryMixin(object):
                  ("attr", "synonym"),
                  ("type", attr.name.type.__class__.__name__),
                  ("read_only", True),
+                 ("info", attr.info),
                  ("doc", attr.doc)
                  ])
             result[key]= p
@@ -302,6 +317,7 @@ class FetchAndCarryMixin(object):
                  ("direction", direction),
                  ("type", attr.mapper.class_.__name__),
                  ("fkey", fkey),
+                 ("info", attr.info),
                  ("doc", attr.doc)
                  ])
             result[key]= p
@@ -313,6 +329,7 @@ class FetchAndCarryMixin(object):
                  ("attr", "hybrid"),
                  ("type", None),
                  ("read_only", True),
+                 ("info", attr.info),
                  ("doc", None)
                  ])
             result[key]= p
