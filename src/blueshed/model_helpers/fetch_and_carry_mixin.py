@@ -23,8 +23,9 @@ from blueshed.utils.utils import dumps, loads
 
 class FetchAndCarryMixin(object):
     
-    def __init__(self, model):
+    def __init__(self, model, broadcast_depth=0):
         self._fc_model = model
+        self._fc_broadcast_depth=broadcast_depth
         self._fc_description = self._fc_describe(model.Base)
     
     
@@ -176,7 +177,7 @@ class FetchAndCarryMixin(object):
             add_items(obj)
             remove_items(obj)
             session.commit()
-            result = self._fc_serialize(obj)
+            result = self._fc_serialize(obj,depth=self._fc_broadcast_depth)
             signal = "{} {}".format(message,obj.__class__.__name__)
             self._broadcast_on_success(signal, result)
         for signal, message in to_broadcast:

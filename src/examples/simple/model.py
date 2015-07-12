@@ -5,6 +5,8 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative.api import declared_attr, has_inherited_table, declarative_base
 import re
 
+# see: http://docs.sqlalchemy.org/en/rel_0_8/orm/extensions/declarative.html#augmenting-the-base
+
 
 service_grant_steps_step = Table('service_grant_steps_step', Base.metadata,
 	Column('grant_steps_id', Integer, ForeignKey('service.id')),
@@ -21,12 +23,6 @@ service_revoke_steps_step = Table('service_revoke_steps_step', Base.metadata,
 user_requirements_service = Table('user_requirements_service', Base.metadata,
 	Column('requirements_id', Integer, ForeignKey('user.id')),
 	Column('service_id', Integer, ForeignKey('service.id')),
-	mysql_engine='InnoDB')
-
-
-user_fullfilments_step = Table('user_fullfilments_step', Base.metadata,
-	Column('fullfilments_id', Integer, ForeignKey('user.id')),
-	Column('step_id', Integer, ForeignKey('step.id')),
 	mysql_engine='InnoDB')
 
 
@@ -99,11 +95,6 @@ class Step(Base):
 		primaryjoin='Step.id==service_revoke_steps_step.c.step_id',
 		secondary='service_revoke_steps_step',
 		lazy='joined', back_populates='revoke_steps')
-	people = relationship('User',
-		secondaryjoin='User.id==user_fullfilments_step.c.fullfilments_id',
-		primaryjoin='Step.id==user_fullfilments_step.c.step_id',
-		secondary='user_fullfilments_step',
-		lazy='joined', back_populates='fullfilments')
 
 
 class System(Base):
@@ -118,18 +109,11 @@ class System(Base):
 class User(Base):
 	
 	id = Column(Integer, primary_key=True)
-	email = Column(String(128))
-	_password = Column(String(80))
-	name = Column(String(255))
+	name = Column(String(128))
 	requirements = relationship('Service',
 		primaryjoin='User.id==user_requirements_service.c.requirements_id',
 		secondaryjoin='Service.id==user_requirements_service.c.service_id',
 		secondary='user_requirements_service',
-		lazy='joined', back_populates='people')
-	fullfilments = relationship('Step',
-		primaryjoin='User.id==user_fullfilments_step.c.fullfilments_id',
-		secondaryjoin='Step.id==user_fullfilments_step.c.step_id',
-		secondary='user_fullfilments_step',
 		lazy='joined', back_populates='people')
 	history = relationship('History', uselist=True, 
 		primaryjoin='History.person_id==User.id', remote_side='History.person_id',

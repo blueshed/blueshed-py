@@ -4,7 +4,7 @@
     "attrs": [
       {
         "name": "person",
-        "type": "Person",
+        "type": "User",
         "size": 255,
         "precision": 36,
         "scale": 12,
@@ -61,100 +61,6 @@
         "m2m": false,
         "nullable": true,
         "is_m2m": false
-      }
-    ]
-  },
-  {
-    "name": "Permission",
-    "attrs": [
-      {
-        "name": "name",
-        "type": "String",
-        "size": "80",
-        "precision": 36,
-        "scale": 12,
-        "values": null,
-        "backref": null,
-        "m2m": false,
-        "nullable": true,
-        "is_m2m": false
-      }
-    ]
-  },
-  {
-    "name": "Person",
-    "attrs": [
-      {
-        "name": "email",
-        "type": "String",
-        "size": "128",
-        "precision": 36,
-        "scale": 12,
-        "values": null,
-        "backref": null,
-        "m2m": false,
-        "nullable": true,
-        "is_m2m": false
-      },
-      {
-        "name": "_password",
-        "type": "String",
-        "size": "80",
-        "precision": 36,
-        "scale": 12,
-        "values": null,
-        "backref": null,
-        "m2m": false,
-        "nullable": true,
-        "is_m2m": false
-      },
-      {
-        "name": "name",
-        "type": "String",
-        "size": 255,
-        "precision": 36,
-        "scale": 12,
-        "values": null,
-        "backref": null,
-        "m2m": false,
-        "nullable": true,
-        "is_m2m": false
-      },
-      {
-        "name": "permissions",
-        "type": "Permission",
-        "size": 255,
-        "precision": 36,
-        "scale": 12,
-        "values": null,
-        "backref": null,
-        "m2m": true,
-        "nullable": true,
-        "is_m2m": true
-      },
-      {
-        "name": "requirements",
-        "type": "Service",
-        "size": 255,
-        "precision": 36,
-        "scale": 12,
-        "values": null,
-        "backref": "people",
-        "m2m": true,
-        "nullable": true,
-        "is_m2m": true
-      },
-      {
-        "name": "fullfilments",
-        "type": "Step",
-        "size": 255,
-        "precision": 36,
-        "scale": 12,
-        "values": null,
-        "backref": "people",
-        "m2m": true,
-        "nullable": true,
-        "is_m2m": true
       }
     ]
   },
@@ -254,6 +160,35 @@
         "m2m": false,
         "nullable": true,
         "is_m2m": false
+      }
+    ]
+  },
+  {
+    "name": "User",
+    "attrs": [
+      {
+        "name": "name",
+        "type": "String",
+        "size": "128",
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": null,
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      },
+      {
+        "name": "requirements",
+        "type": "Service",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": "people",
+        "m2m": true,
+        "nullable": true,
+        "is_m2m": true
       }
     ]
   }

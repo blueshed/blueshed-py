@@ -44,7 +44,7 @@ class Control(BaseControl,Access,FetchAndCarryMixin):
                 session.commit()
         
         # initialize after db created
-        FetchAndCarryMixin.__init__(self, model)
+        FetchAndCarryMixin.__init__(self, model,broadcast_depth=1)
         self._status = Status(functools.partial(self._broadcast,'_service_status_'))
 
     

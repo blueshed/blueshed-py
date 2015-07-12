@@ -19,7 +19,7 @@ define(
     	Appl.prototype.init = function(){
             this.title("Simple");
 			this.connection = new Connection();
-			this.store = new Store(this.connection);
+			this.store = new Store(this.connection, this.error, this.notify);
 			this.service_status = ko.observable();
 			this.loading = ko.observable(false);
 			this.user = ko.observable();
