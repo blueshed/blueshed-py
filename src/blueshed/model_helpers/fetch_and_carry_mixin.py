@@ -218,7 +218,7 @@ class FetchAndCarryMixin(object):
                         if v and n['attr'] in ["column","pk"]:
                             values.append((k,v))
                         elif v and n['attr'] in ['hybrid']:  #who knows how to get values?
-                            if not hasattr(v, "strip") and hasattr(v, "__getitem__"):
+                            if not hasattr(v, "strip") and hasattr(v, "keys"):
                                 values.append((k,OrderedDict(v)))
                             elif not hasattr(v, "strip") and hasattr(v, "__iter__"):
                                 values.append((k,list(v)))
