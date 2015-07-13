@@ -5,7 +5,25 @@ Created on 2 Jul 2014
 '''
 import blueshed.model_helpers.access_model as model
 from sqlalchemy.sql.expression import and_
+from functools import wraps
 import logging
+
+
+def requires_permissions(*permissions):
+    ''' This annotation tells the service which permissions are required to perform the function '''
+    def _require(f):    
+        @wraps(f)        
+        def call(self, *args, **kwargs):
+            with self.session as session:
+                self._require_permissions_(*permissions)
+                result = f(self, session, *args, **kwargs)
+                return result
+        call._wrapped_ = f
+        call._access_permissions_ = permissions
+        return call
+    return _require
+
+
 
 class Access(object):
     """
@@ -14,6 +32,13 @@ class Access(object):
 
     # ACCESS CONTROL
     
+    def _get_token_user(self, token):
+        with self.session as session:
+            user = session.query(model.Person).filter_by(_token=token).first()
+            if user is not None and "api" in [p.name for p in user.permissions]:
+                return user.serialize
+            
+        
     def login(self, email, password):
         with self.session as session:
             user = session.query(model.Person).filter(and_(model.Person.email==email,
@@ -30,13 +55,7 @@ class Access(object):
             if user is None:
                 raise Exception("No such user")
             self._email_password_(email, user._password)
-            
-            
-    def get_token_user(self, token):
-        with self.session as session:
-            user = session.query(model.Person).filter_by(_token=token).first()
-            if user is not None and "api" in [p.name for p in user.permissions]:
-                return user.serialize
+        
         
         
     def register(self, accl, email):
@@ -66,14 +85,14 @@ class Access(object):
             return True
 
 
-    def get_user(self, user_id):
+    def _get_user(self, user_id):
         if user_id is None: return
         with self.session as session:
             user = session.query(model.Person).get(user_id)
             return user.serialize
         
     
-    def add_user(self, details):
+    def _add_user(self, details):
         with self.session as session:
             user = model.Person(email=details.get("email"),
                                 _password=details.get("password"))
@@ -88,7 +107,7 @@ class Access(object):
             return self.json_user(user)
 
     
-    def save_user(self, details):
+    def _save_user(self, details):
         pass
     
     

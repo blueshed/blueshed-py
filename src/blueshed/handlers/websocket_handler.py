@@ -36,7 +36,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
     
     def open(self):
         logging.info("WebSocket opened")
-        user = self.control.begin_web_session(self.current_user, self,
+        user = self.control._begin_web_session(self.current_user, self,
                                               self.request.remote_ip,
                                               self.request.headers)
         if user:
@@ -44,7 +44,8 @@ class WebsocketHandler(websocket.WebSocketHandler):
                             "signal":"user",
                             "message": user,
                             "ws_version": self.application.settings.get('ws_version',1),
-                            "model": self.control.describe(self.current_user)
+                            "model": self.control._fc_description,
+                            "methods": self.control._fc_methods
                             })
         else:
             self.write_message(utils.dumps({'access_error':True}))
@@ -63,9 +64,6 @@ class WebsocketHandler(websocket.WebSocketHandler):
             args = message.get("args", {})
             
             method = getattr(self.control, action)
-            
-            if action=="make_impression":
-                args["summary"] = self._request_summary()
                 
             result = method(self.current_user, **args)
             self.write_message(utils.dumps({"result": result,
@@ -91,7 +89,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
 
     def on_close(self):
         logging.info("WebSocket closed")
-        self.control.end_web_session(self)
+        self.control._end_web_session(self)
         
     def force_close(self, code=None, reason=None):
         self.control._clients.remove(self)

@@ -4,7 +4,7 @@ Created on 8 Jul 2015
 @author: peterb
 '''
 from pkg_resources import resource_filename  # @UnresolvedImport
-from blueshed.model_helpers.access_mixin import Access
+from blueshed.model_helpers.access_mixin import Access, requires_permissions
 from blueshed.model_helpers.base_control import BaseControl
 from blueshed.model_helpers.fetch_and_carry_mixin import FetchAndCarryMixin
 from blueshed.model_helpers import utils
@@ -12,7 +12,6 @@ import examples.simple.model as replaceable_model
 import examples.simple.model_ext as model
 import functools
 from blueshed.utils.status import Status
-from sqlalchemy.sql.expression import select
 import inspect
 import os
 
@@ -48,7 +47,7 @@ class Control(BaseControl,Access,FetchAndCarryMixin):
         self._status = Status(functools.partial(self._broadcast,'_service_status_'))
 
     
-    def begin_web_session(self, accl, client, ip_address, headers):
+    def _begin_web_session(self, accl, client, ip_address, headers):
         if accl:
             with self.session as session:
                 user = session.query(model.Person).get(accl)
@@ -59,28 +58,35 @@ class Control(BaseControl,Access,FetchAndCarryMixin):
                 return result                    
                 
         
-    def end_web_session(self, client):
+    def _end_web_session(self, client):
         self._clients.remove(client)
         self._status['clients']=list(set(client.current_user for client in self._clients))
 
 
     def echo(self, accl, message):
+        """
+            Send message to all connected clients with signal:'echo'
+        """
         self._broadcast("echo",message)
-    
+        return "broadcast to {} clients".format(len(self._clients))
         
-    def describe(self, accl):
-        return self._fc_description
     
-    
-    def people_report(self, accl):
-        with self.session as session:
-            q = session.query(model.PersonReport)
-            values = [row._asdict() for row in q]
-            types = [(col.name,col.type) for col in q.statement.columns]
-            return types,values
+    @requires_permissions("admin")
+    def people_report(self, accl, session):
+        """
+            Returns a report of people and permission counts
+        """
+        q = session.query(model.PersonReport)
+        values = [row._asdict() for row in q]
+        types = [(col.name,str(col.type)) for col in q.statement.columns]
+        return types,values
 
         
-    def save_model(self, accl, json_model, sqla_model):
+    @requires_permissions("admin")
+    def save_model(self, accl, session, json_model, sqla_model):
+        """
+            Will change the model and cause a restart
+        """
         with open("model.json","w") as file:
             file.write(json_model)
         model_path = os.path.join(os.path.dirname(inspect.getfile(replaceable_model)),"model.py")
@@ -91,8 +97,11 @@ class Control(BaseControl,Access,FetchAndCarryMixin):
         with open(model_path,"w") as pymodel:
             pymodel.write(sqla_model)
             
-            
+    
     def fetch_model(self, accl):
+        """
+            Returns the last stored model.json
+        """
         if os.path.isfile("model.json"):
             with open("model.json","r") as file:
                 return file.read()

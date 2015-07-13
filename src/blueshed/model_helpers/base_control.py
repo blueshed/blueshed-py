@@ -62,7 +62,7 @@ class BaseControl(object):
         return closing_session()
     
     
-    def user_session(self, accl):
+    def _user_session(self, accl):
         ''' 
             returns a self closing session for use by with statements 
             associating the action accl to the audit listener

@@ -8,114 +8,46 @@ import re
 # see: http://docs.sqlalchemy.org/en/rel_0_8/orm/extensions/declarative.html#augmenting-the-base
 
 
-service_grant_steps_step = Table('service_grant_steps_step', Base.metadata,
-	Column('grant_steps_id', Integer, ForeignKey('service.id')),
-	Column('step_id', Integer, ForeignKey('step.id')),
+customer_addresses_address = Table('customer_addresses_address', Base.metadata,
+	Column('addresses_id', Integer, ForeignKey('customer.id')),
+	Column('address_id', Integer, ForeignKey('address.id')),
 	mysql_engine='InnoDB')
 
 
-service_revoke_steps_step = Table('service_revoke_steps_step', Base.metadata,
-	Column('revoke_steps_id', Integer, ForeignKey('service.id')),
-	Column('step_id', Integer, ForeignKey('step.id')),
-	mysql_engine='InnoDB')
-
-
-user_requirements_service = Table('user_requirements_service', Base.metadata,
-	Column('requirements_id', Integer, ForeignKey('user.id')),
-	Column('service_id', Integer, ForeignKey('service.id')),
-	mysql_engine='InnoDB')
-
-
-class History(Base):
-	
-	ACTION = ['added','removed']
+class Address(Base):
 	
 	id = Column(Integer, primary_key=True)
-	person_id = Column(Integer, ForeignKey('user.id'))
-	person = relationship('User', uselist=False,
-		primaryjoin='History.person_id==User.id', remote_side='User.id',
-		back_populates='history')
-	step_id = Column(Integer, ForeignKey('step.id'))
-	step = relationship('Step', uselist=False,
-		primaryjoin='History.step_id==Step.id', remote_side='Step.id',
-		back_populates='history')
-	service_id = Column(Integer, ForeignKey('service.id'))
-	service = relationship('Service', uselist=False,
-		primaryjoin='History.service_id==Service.id', remote_side='Service.id',
-		back_populates='history')
-	action = Column(Enum(*ACTION))
-	created = Column(DateTime)
+	line1 = Column(String(100))
+	line2 = Column(String(80))
+	town = Column(String(80))
+	postcode = Column(String(10))
+	county = Column(String(80))
+	customers = relationship('Customer',
+		secondaryjoin='Customer.id==customer_addresses_address.c.addresses_id',
+		primaryjoin='Address.id==customer_addresses_address.c.address_id',
+		secondary='customer_addresses_address',
+		lazy='joined', back_populates='addresses')
+	delivery_customers = relationship('Customer', uselist=True, 
+		primaryjoin='Customer.delivery_address_id==Address.id', remote_side='Customer.delivery_address_id',
+		back_populates='delivery_address')
 
 
-class Service(Base):
+class Customer(Base):
+	
+	CUSTOMER_TYPE = ['retail','wholesale']
 	
 	id = Column(Integer, primary_key=True)
-	name = Column(String(255))
-	system_id = Column(Integer, ForeignKey('system.id'))
-	system = relationship('System', uselist=False,
-		primaryjoin='Service.system_id==System.id', remote_side='System.id',
-		back_populates='services')
-	grant_steps = relationship('Step',
-		primaryjoin='Service.id==service_grant_steps_step.c.grant_steps_id',
-		secondaryjoin='Step.id==service_grant_steps_step.c.step_id',
-		secondary='service_grant_steps_step',
-		lazy='joined', back_populates='grant_services')
-	revoke_steps = relationship('Step',
-		primaryjoin='Service.id==service_revoke_steps_step.c.revoke_steps_id',
-		secondaryjoin='Step.id==service_revoke_steps_step.c.step_id',
-		secondary='service_revoke_steps_step',
-		lazy='joined', back_populates='revoke_services')
-	history = relationship('History', uselist=True, 
-		primaryjoin='History.service_id==Service.id', remote_side='History.service_id',
-		back_populates='service')
-	people = relationship('User',
-		secondaryjoin='User.id==user_requirements_service.c.requirements_id',
-		primaryjoin='Service.id==user_requirements_service.c.service_id',
-		secondary='user_requirements_service',
-		lazy='joined', back_populates='requirements')
-
-
-class Step(Base):
-	
-	id = Column(Integer, primary_key=True)
-	name = Column(String(255))
-	prerequisit_id = Column(Integer, ForeignKey('step.id'))
-	prerequisit = relationship('Step', uselist=False,
-		primaryjoin='Step.prerequisit_id==Step.id', remote_side='Step.id')
-	history = relationship('History', uselist=True, 
-		primaryjoin='History.step_id==Step.id', remote_side='History.step_id',
-		back_populates='step')
-	grant_services = relationship('Service',
-		secondaryjoin='Service.id==service_grant_steps_step.c.grant_steps_id',
-		primaryjoin='Step.id==service_grant_steps_step.c.step_id',
-		secondary='service_grant_steps_step',
-		lazy='joined', back_populates='grant_steps')
-	revoke_services = relationship('Service',
-		secondaryjoin='Service.id==service_revoke_steps_step.c.revoke_steps_id',
-		primaryjoin='Step.id==service_revoke_steps_step.c.step_id',
-		secondary='service_revoke_steps_step',
-		lazy='joined', back_populates='revoke_steps')
-
-
-class System(Base):
-	
-	id = Column(Integer, primary_key=True)
-	name = Column(String(255))
-	services = relationship('Service', uselist=True, 
-		primaryjoin='Service.system_id==System.id', remote_side='Service.system_id',
-		back_populates='system')
-
-
-class User(Base):
-	
-	id = Column(Integer, primary_key=True)
-	name = Column(String(128))
-	requirements = relationship('Service',
-		primaryjoin='User.id==user_requirements_service.c.requirements_id',
-		secondaryjoin='Service.id==user_requirements_service.c.service_id',
-		secondary='user_requirements_service',
-		lazy='joined', back_populates='people')
-	history = relationship('History', uselist=True, 
-		primaryjoin='History.person_id==User.id', remote_side='History.person_id',
-		back_populates='person')
+	name = Column(String(80))
+	dob = Column(Date)
+	active = Column(Boolean())
+	customer_type = Column(Enum(*CUSTOMER_TYPE))
+	addresses = relationship('Address',
+		primaryjoin='Customer.id==customer_addresses_address.c.addresses_id',
+		secondaryjoin='Address.id==customer_addresses_address.c.address_id',
+		secondary='customer_addresses_address',
+		lazy='joined', back_populates='customers')
+	delivery_address_id = Column(Integer, ForeignKey('address.id'))
+	delivery_address = relationship('Address', uselist=False,
+		primaryjoin='Customer.delivery_address_id==Address.id', remote_side='Address.id',
+		back_populates='delivery_customers')
 

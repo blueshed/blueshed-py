@@ -14,11 +14,12 @@ Created on 8 Jul 2015
 @author: peterb
 '''
 import logging
+import inspect as py_inspect
 from collections import OrderedDict
 from sqlalchemy.inspection import inspect
 from sqlalchemy.sql.expression import asc, desc
 from sqlalchemy.orm import subqueryload
-from blueshed.utils.utils import dumps, loads
+from blueshed.utils.utils import dumps, loads, parse_date, parse_time
 
 
 class FetchAndCarryMixin(object):
@@ -27,6 +28,7 @@ class FetchAndCarryMixin(object):
         self._fc_model = model
         self._fc_broadcast_depth=broadcast_depth
         self._fc_description = self._fc_describe(model.Base)
+        self._fc_methods = self._fc_describe_service(self)
     
     
     def fetch(self, accl, type, id=None, attr=None, 
@@ -145,7 +147,7 @@ class FetchAndCarryMixin(object):
                     for attr, type_, id_ in to_add:
                         item = session.query(getattr(self._fc_model,type_)).get(id_)
                         getattr(obj,attr).append(item)
-                        to_broadcast.append("added",{ "target": surrogate, "item":[attr, type_, id_] })
+                        to_broadcast.append(("added",{ "target": surrogate, "item":[attr, type_, id_] }))
                         
             def remove_items(obj):
                 if to_remove:
@@ -153,7 +155,7 @@ class FetchAndCarryMixin(object):
                     for attr, type_, id_ in to_remove:
                         item = session.query(getattr(self._fc_model,type_)).get(id_)
                         getattr(obj,attr).remove(item)
-                        to_broadcast.append("removed",{ "target": surrogate, "item":[attr, type_, id_] })
+                        to_broadcast.append(("removed",{ "target": surrogate, "item":[attr, type_, id_] }))
                 
             type_ = getattr(self._fc_model,item["_type"])
             id_ = item.get("id")
@@ -207,6 +209,10 @@ class FetchAndCarryMixin(object):
                            p["attr"][0] is not "_" and \
                            p["attr"] in ["column","hybrid"]:
                                 value = values[name]
+                                if p["type"] in ["DateTime","Date"]:
+                                    value = parse_date(value)
+                                elif p["type"] == "Time":
+                                    value = parse_time(value)
                                 logging.debug("setting: %s=%r",name,value)
                                 setattr(item,name,value)
                 else:
@@ -364,5 +370,42 @@ class FetchAndCarryMixin(object):
                 raise
         result.sort(key=lambda v: v['name'])
         return result
+    
+    
+    def _fc_describe_service(self, instance):
+        '''
+            Returns a description of the public methods of this class
+        '''
+        methods = []
+        for name in dir(instance):
+            if name[0] == '_': continue
+            method = getattr(instance,name)
+            requires = []
+            ignore_list = ['self','accl']
+            if hasattr(method,'_access_permissions_'):
+                requires = method._access_permissions_
+                ignore_list.append("session")
+            if hasattr(method,'_wrapped_'):
+                method = method._wrapped_
+            if callable(method):
+                spec = py_inspect.getargspec(method)
+                args = [n for n in spec.args if n not in ignore_list]
+                logging.debug('%s %s',name,py_inspect.formatargspec(spec.args))
+                defaults = {}
+                if spec.defaults:
+                    sdefaults = list(spec.defaults)
+                    sdefaults.reverse()
+                    for i,value in enumerate(sdefaults):
+                        defaults[spec.args[-(i+1)]] = value if value is not None else '_optional_'
+                docs = py_inspect.getdoc(method)
+                description = OrderedDict([
+                               ("name", name), 
+                               ("args", args), 
+                               ("defaults", defaults),
+                               ("requires", requires), 
+                               ("docs", docs)
+                               ])
+                methods.append(description)
+        return methods
         
         

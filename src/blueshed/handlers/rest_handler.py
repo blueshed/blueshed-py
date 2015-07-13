@@ -6,6 +6,7 @@ Created on 12 Feb 2014
 import logging
 from blueshed.utils.utils import loads, dumps
 from blueshed.handlers.base_handler import BaseHandler
+from collections import OrderedDict
 
 
 class RestHandler(BaseHandler):
@@ -17,18 +18,30 @@ class RestHandler(BaseHandler):
     
      
     def prepare(self):
-        if self.request.headers.get("Content-Type") == "application/json":
-            self.json_args = loads(str(self.request.body,encoding="UTF-8")) 
+        if self.request.headers.get("Content-Type") == "application/json" and \
+            self.request.body:
+            self.json_args = loads(str(self.request.body,encoding="UTF-8"))
+        else:
+            self.json_args = None
+            
+            
+    def require_json_content(self):
+        if self.request.headers.get("Content-Type") != "application/json":
+            raise Exception("Content-Type 'application/json' required")
     
     
     def get(self, resource_path):
+        """
+            Get goes to fetch_and_carry_mixin fetch or returns the meta data
+        """
         logging.info("get %s",resource_path)
         if resource_path is None or resource_path is "":
-            self.write({
-                "target": "rest-api",
-                "version": 1,
-                "model":self.control.describe(self.current_user)
-            })
+            self.write(OrderedDict([
+                ("target", "rest-api"),
+                ("version", 1),
+                ("post_methods", self.control._fc_methods),
+                ("model", self.control._fc_description)
+            ]))
         else:
             try:
                 resources = resource_path.split("/")
@@ -67,22 +80,53 @@ class RestHandler(BaseHandler):
         
     
     def post(self,resource_path):
-        self._save(resource_path)
+        """
+            Post calls public methods on the control
+        """
+        self.require_json_content()
+        logging.info("post %s - %s",resource_path, self.json_args)
+        resources = resource_path.split("/")
+        action = resources[0]
+        try:
+            logging.debug(resource_path)
+            args = self.json_args or {}
+            
+            method = getattr(self.control, action)
+                
+            result = method(self.current_user, **args)
+            self.write(dumps({"result": result},indent=2))
+            self.control._flush()
+            
+        except Exception as ex:
+            logging.exception(ex)
+            error = str(ex)
+            self.write(dumps({"result": None,
+                              "error" : error },indent=2))
+            self.control._flush(ex)
+            
         
     def put(self,resource_path):
-        self._save(resource_path)
-    
-    def _save(self, resource_path):
+        """
+            Put goes to fetch_and_carry_mixin carry
+        """
+        self.require_json_content()
         logging.info("put %s - %s",resource_path, self.json_args)
         try:
             resources = resource_path.split("/")
             resource = resources[0]
             id = int(resources[1]) if len(resources) > 1 else None
-            item = self.json_args
-            if resource is "":
+            args = self.json_args
+            item = args.get("item")
+            if item is None:
+                raise Exception("json payload: {item:obj, (to_add:[attr,type,id]]), (to_remove:[attr,type,id]])}")
+            if item.get("_type") is None and resource in [None,""]:
                 raise Exception("No resource specified")
-            item["_type"] = resource
-            result = {"result": self.control.carry(1,item), "action": "saved" }
+            if item.get("_type") is None:
+                item["_type"] = resource
+            result = {"result": self.control.carry(self.get_current_user,
+                                                   item,
+                                                   args.get("to_add"),
+                                                   args.get("to_remove")), "action": "saved" }
         except Exception as ex:
             result = {"error": str(ex)}
             self.control._flush(ex)
@@ -93,6 +137,10 @@ class RestHandler(BaseHandler):
         
         
     def delete(self, resource_path):
+        """
+            Put goes to fetch_and_carry_mixin carry
+        """
+        self.require_json_content()
         logging.info("delete %s",resource_path)
         try:
             resources = resource_path.split("/")

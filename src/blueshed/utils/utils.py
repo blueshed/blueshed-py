@@ -61,6 +61,17 @@ def parse_date(value):
                 
     return result
 
+def parse_time(value):
+    result = None
+    if value:
+        try:
+            result = datetime.datetime.strptime(value,"%H:%M:%S.%f")
+        except:
+            try:
+                result =  datetime.datetime.strptime(value,"%H:%M:%S")
+            except:
+                result =  datetime.datetime.strptime(value,"%H:%M")
+    return result
 
 def parse_unix_time(value):
     return datetime.datetime.fromtimestamp(int(value))

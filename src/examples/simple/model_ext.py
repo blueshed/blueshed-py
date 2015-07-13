@@ -13,6 +13,8 @@ from blueshed.model_helpers.access_model import Person, Permission,\
 
 
 Person._token = Column(String(80))
+Person.firstname = Column(String(80))
+Person.lastname = Column(String(80))
 
 '''
     An example View

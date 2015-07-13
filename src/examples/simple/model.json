@@ -1,194 +1,143 @@
 [
   {
-    "name": "History",
+    "name": "Address",
     "attrs": [
       {
-        "name": "person",
-        "type": "User",
-        "size": 255,
+        "name": "line1",
+        "type": "String",
+        "size": 100,
         "precision": 36,
         "scale": 12,
         "values": null,
-        "backref": "history",
+        "backref": null,
         "m2m": false,
         "nullable": true,
         "is_m2m": false
       },
       {
-        "name": "step",
-        "type": "Step",
-        "size": 255,
+        "name": "line2",
+        "type": "String",
+        "size": 80,
         "precision": 36,
         "scale": 12,
         "values": null,
-        "backref": "history",
+        "backref": null,
         "m2m": false,
         "nullable": true,
         "is_m2m": false
       },
       {
-        "name": "service",
-        "type": "Service",
-        "size": 255,
+        "name": "town",
+        "type": "String",
+        "size": 80,
         "precision": 36,
         "scale": 12,
         "values": null,
-        "backref": "history",
+        "backref": null,
         "m2m": false,
         "nullable": true,
         "is_m2m": false
       },
       {
-        "name": "action",
+        "name": "postcode",
+        "type": "String",
+        "size": 10,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": null,
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      },
+      {
+        "name": "county",
+        "type": "String",
+        "size": 80,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": null,
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      }
+    ]
+  },
+  {
+    "name": "Customer",
+    "attrs": [
+      {
+        "name": "name",
+        "type": "String",
+        "size": 80,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": null,
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      },
+      {
+        "name": "dob",
+        "type": "Date",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": null,
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      },
+      {
+        "name": "active",
+        "type": "Boolean",
+        "size": 255,
+        "precision": 36,
+        "scale": 12,
+        "values": null,
+        "backref": null,
+        "m2m": false,
+        "nullable": true,
+        "is_m2m": false
+      },
+      {
+        "name": "customer_type",
         "type": "Enum",
         "size": 255,
         "precision": 36,
         "scale": 12,
-        "values": "added,removed",
+        "values": "retail,wholesale",
         "backref": null,
         "m2m": false,
         "nullable": true,
         "is_m2m": false
       },
       {
-        "name": "created",
-        "type": "Datetime",
+        "name": "addresses",
+        "type": "Address",
         "size": 255,
         "precision": 36,
         "scale": 12,
         "values": null,
-        "backref": null,
-        "m2m": false,
-        "nullable": true,
-        "is_m2m": false
-      }
-    ]
-  },
-  {
-    "name": "Service",
-    "attrs": [
-      {
-        "name": "name",
-        "type": "String",
-        "size": 255,
-        "precision": 36,
-        "scale": 12,
-        "values": null,
-        "backref": null,
-        "m2m": false,
-        "nullable": true,
-        "is_m2m": false
-      },
-      {
-        "name": "system",
-        "type": "System",
-        "size": 255,
-        "precision": 36,
-        "scale": 12,
-        "values": null,
-        "backref": "services",
-        "m2m": false,
-        "nullable": true,
-        "is_m2m": false
-      },
-      {
-        "name": "grant_steps",
-        "type": "Step",
-        "size": 255,
-        "precision": 36,
-        "scale": 12,
-        "values": null,
-        "backref": "grant_services",
+        "backref": "customers",
         "m2m": true,
         "nullable": true,
         "is_m2m": true
       },
       {
-        "name": "revoke_steps",
-        "type": "Step",
+        "name": "delivery_address",
+        "type": "Address",
         "size": 255,
         "precision": 36,
         "scale": 12,
         "values": null,
-        "backref": "revoke_services",
-        "m2m": true,
-        "nullable": true,
-        "is_m2m": true
-      }
-    ]
-  },
-  {
-    "name": "Step",
-    "attrs": [
-      {
-        "name": "name",
-        "type": "String",
-        "size": 255,
-        "precision": 36,
-        "scale": 12,
-        "values": null,
-        "backref": null,
+        "backref": "delivery_customers",
         "m2m": false,
         "nullable": true,
         "is_m2m": false
-      },
-      {
-        "name": "prerequisit",
-        "type": "Step",
-        "size": 255,
-        "precision": 36,
-        "scale": 12,
-        "values": null,
-        "backref": null,
-        "m2m": false,
-        "nullable": true,
-        "is_m2m": false
-      }
-    ]
-  },
-  {
-    "name": "System",
-    "attrs": [
-      {
-        "name": "name",
-        "type": "String",
-        "size": 255,
-        "precision": 36,
-        "scale": 12,
-        "values": null,
-        "backref": null,
-        "m2m": false,
-        "nullable": true,
-        "is_m2m": false
-      }
-    ]
-  },
-  {
-    "name": "User",
-    "attrs": [
-      {
-        "name": "name",
-        "type": "String",
-        "size": "128",
-        "precision": 36,
-        "scale": 12,
-        "values": null,
-        "backref": null,
-        "m2m": false,
-        "nullable": true,
-        "is_m2m": false
-      },
-      {
-        "name": "requirements",
-        "type": "Service",
-        "size": 255,
-        "precision": 36,
-        "scale": 12,
-        "values": null,
-        "backref": "people",
-        "m2m": true,
-        "nullable": true,
-        "is_m2m": true
       }
     ]
   }

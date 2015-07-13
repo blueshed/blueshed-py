@@ -8,46 +8,500 @@ import re
 # see: http://docs.sqlalchemy.org/en/rel_0_8/orm/extensions/declarative.html#augmenting-the-base
 
 
-customer_addresses_address = Table('customer_addresses_address', Base.metadata,
-	Column('addresses_id', Integer, ForeignKey('customer.id')),
-	Column('address_id', Integer, ForeignKey('address.id')),
+apitoken_permissions_userpermission = Table('apitoken_permissions_userpermission', Base.metadata,
+	Column('permissions_id', Integer, ForeignKey('api_token.id')),
+	Column('user_permission_id', Integer, ForeignKey('user_permission.id')),
 	mysql_engine='InnoDB')
 
 
-class Address(Base):
+areainfo_products_product = Table('areainfo_products_product', Base.metadata,
+	Column('products_id', Integer, ForeignKey('area_info.id')),
+	Column('product_id', Integer, ForeignKey('product.id')),
+	mysql_engine='InnoDB')
+
+
+brand_owners_user = Table('brand_owners_user', Base.metadata,
+	Column('owners_id', Integer, ForeignKey('brand.id')),
+	Column('user_id', Integer, ForeignKey('user.id')),
+	mysql_engine='InnoDB')
+
+
+contractorshare_permissions_userpermission = Table('contractorshare_permissions_userpermission', Base.metadata,
+	Column('permissions_id', Integer, ForeignKey('contractor_share.id')),
+	Column('user_permission_id', Integer, ForeignKey('user_permission.id')),
+	mysql_engine='InnoDB')
+
+
+right_promoters_user = Table('right_promoters_user', Base.metadata,
+	Column('promoters_id', Integer, ForeignKey('right.id')),
+	Column('user_id', Integer, ForeignKey('user.id')),
+	mysql_engine='InnoDB')
+
+
+user_permissions_userpermission = Table('user_permissions_userpermission', Base.metadata,
+	Column('permissions_id', Integer, ForeignKey('user.id')),
+	Column('user_permission_id', Integer, ForeignKey('user_permission.id')),
+	mysql_engine='InnoDB')
+
+
+class Allocation(Base):
 	
 	id = Column(Integer, primary_key=True)
-	line1 = Column(String(100))
-	line2 = Column(String(80))
-	town = Column(String(80))
-	postcode = Column(String(10))
-	county = Column(String(80))
-	customers = relationship('Customer',
-		secondaryjoin='Customer.id==customer_addresses_address.c.addresses_id',
-		primaryjoin='Address.id==customer_addresses_address.c.address_id',
-		secondary='customer_addresses_address',
-		lazy='joined', back_populates='addresses')
-	delivery_customers = relationship('Customer', uselist=True, 
-		primaryjoin='Customer.delivery_address_id==Address.id', remote_side='Customer.delivery_address_id',
-		back_populates='delivery_address')
+	right_id = Column(Integer, ForeignKey('right.id'))
+	right = relationship('Right', uselist=False,
+		primaryjoin='Allocation.right_id==Right.id', remote_side='Right.id',
+		back_populates='allocations')
+	brand_id = Column(Integer, ForeignKey('brand.id'))
+	brand = relationship('Brand', uselist=False,
+		primaryjoin='Allocation.brand_id==Brand.id', remote_side='Brand.id')
+	request = Column(Boolean())
+	infos = relationship('AllocationInfo', uselist=True, 
+		primaryjoin='AllocationInfo.allocation_id==Allocation.id', remote_side='AllocationInfo.allocation_id',
+		back_populates='allocation')
 
 
-class Customer(Base):
+class AllocationInfo(Base):
 	
-	CUSTOMER_TYPE = ['retail','wholesale']
+	id = Column(Integer, primary_key=True)
+	allocation_id = Column(Integer, ForeignKey('allocation.id'))
+	allocation = relationship('Allocation', uselist=False,
+		primaryjoin='AllocationInfo.allocation_id==Allocation.id', remote_side='Allocation.id',
+		back_populates='infos')
+	contractor_id = Column(Integer, ForeignKey('user.id'))
+	contractor = relationship('User', uselist=False,
+		primaryjoin='AllocationInfo.contractor_id==User.id', remote_side='User.id')
+	notes = Column(Text)
+	artwork_id = Column(Integer, ForeignKey('brand_art.id'))
+	artwork = relationship('BrandArt', uselist=False,
+		primaryjoin='AllocationInfo.artwork_id==BrandArt.id', remote_side='BrandArt.id')
+	cost = Column(Numeric(36,12))
+	product_id = Column(Integer, ForeignKey('product.id'))
+	product = relationship('Product', uselist=False,
+		primaryjoin='AllocationInfo.product_id==Product.id', remote_side='Product.id')
+	area_id = Column(Integer, ForeignKey('area.id'))
+	area = relationship('Area', uselist=False,
+		primaryjoin='AllocationInfo.area_id==Area.id', remote_side='Area.id')
+
+
+class ApiToken(Base):
+	
+	id = Column(Integer, primary_key=True)
+	token = Column(String(255))
+	owner_id = Column(Integer, ForeignKey('user.id'))
+	owner = relationship('User', uselist=False,
+		primaryjoin='ApiToken.owner_id==User.id', remote_side='User.id',
+		back_populates='tokens')
+	from_date = Column(DateTime)
+	to_date = Column(DateTime)
+	permissions = relationship('UserPermission',
+		primaryjoin='ApiToken.id==apitoken_permissions_userpermission.c.permissions_id',
+		secondaryjoin='UserPermission.id==apitoken_permissions_userpermission.c.user_permission_id',
+		secondary='apitoken_permissions_userpermission',
+		lazy='joined', back_populates='tokens')
+
+
+class Area(Base):
+	
+	id = Column(Integer, primary_key=True)
+	name = Column(String(255))
+	group_id = Column(Integer, ForeignKey('area.id'))
+	group = relationship('Area', uselist=False,
+		primaryjoin='Area.group_id==Area.id', remote_side='Area.id',
+		back_populates='members')
+	lat = Column(Numeric(12,8))
+	lng = Column(Numeric(12,8))
+	owner_id = Column(Integer, ForeignKey('user.id'))
+	owner = relationship('User', uselist=False,
+		primaryjoin='Area.owner_id==User.id', remote_side='User.id',
+		back_populates='areas')
+	member_index = Column(Integer)
+	leaf = Column(Boolean())
+	svg_path = Column(String(255))
+	ref = Column(String(32))
+	members = relationship('Area', uselist=True, 
+		primaryjoin='Area.group_id==Area.id', remote_side='Area.group_id',
+		back_populates='group')
+	infos = relationship('AreaInfo', uselist=True, 
+		primaryjoin='AreaInfo.area_id==Area.id', remote_side='AreaInfo.area_id',
+		back_populates='area')
+
+
+class AreaInfo(Base):
+	
+	TV = ['n/a','None','Some','Good','Great']
+	
+	FF = ['n/a','None','Some','Good','Great']
+	
+	CH = ['n/a','None','Some','Good','Great']
+	
+	QUALITY = ['smart','durable','cheap']
+	
+	id = Column(Integer, primary_key=True)
+	area_id = Column(Integer, ForeignKey('area.id'))
+	area = relationship('Area', uselist=False,
+		primaryjoin='AreaInfo.area_id==Area.id', remote_side='Area.id',
+		back_populates='infos')
+	owner_id = Column(Integer, ForeignKey('user.id'))
+	owner = relationship('User', uselist=False,
+		primaryjoin='AreaInfo.owner_id==User.id', remote_side='User.id')
+	image = Column(String(255))
+	type = Column(String(255))
+	notes = Column(Text)
+	width = Column(String(255))
+	height = Column(String(255))
+	depth = Column(String(255))
+	tv = Column(Enum(*TV))
+	ff = Column(Enum(*FF))
+	ch = Column(Enum(*CH))
+	products = relationship('Product',
+		primaryjoin='AreaInfo.id==areainfo_products_product.c.products_id',
+		secondaryjoin='Product.id==areainfo_products_product.c.product_id',
+		secondary='areainfo_products_product',
+		lazy='joined')
+	quality = Column(Enum(*QUALITY))
+	product_choices = relationship('ProductChoice', uselist=True, 
+		primaryjoin='ProductChoice.area_info_id==AreaInfo.id', remote_side='ProductChoice.area_info_id',
+		back_populates='area_info')
+
+
+class Brand(Base):
 	
 	id = Column(Integer, primary_key=True)
 	name = Column(String(80))
-	dob = Column(Date)
-	active = Column(Boolean())
-	customer_type = Column(Enum(*CUSTOMER_TYPE))
-	addresses = relationship('Address',
-		primaryjoin='Customer.id==customer_addresses_address.c.addresses_id',
-		secondaryjoin='Address.id==customer_addresses_address.c.address_id',
-		secondary='customer_addresses_address',
-		lazy='joined', back_populates='customers')
-	delivery_address_id = Column(Integer, ForeignKey('address.id'))
-	delivery_address = relationship('Address', uselist=False,
-		primaryjoin='Customer.delivery_address_id==Address.id', remote_side='Address.id',
-		back_populates='delivery_customers')
+	initial = Column(String(8))
+	colour_one = Column(String(8))
+	colour_two = Column(String(8))
+	colour_three = Column(String(8))
+	colour_letter = Column(String(8))
+	owners = relationship('User',
+		primaryjoin='Brand.id==brand_owners_user.c.owners_id',
+		secondaryjoin='User.id==brand_owners_user.c.user_id',
+		secondary='brand_owners_user',
+		lazy='joined', back_populates='brands')
+	artwork = relationship('BrandArt', uselist=True, 
+		primaryjoin='BrandArt.brand_id==Brand.id', remote_side='BrandArt.brand_id',
+		back_populates='brand')
+
+
+class BrandArt(Base):
+	
+	id = Column(Integer, primary_key=True)
+	brand_id = Column(Integer, ForeignKey('brand.id'))
+	brand = relationship('Brand', uselist=False,
+		primaryjoin='BrandArt.brand_id==Brand.id', remote_side='Brand.id',
+		back_populates='artwork')
+	path = Column(String(255))
+	contractor_id = Column(Integer, ForeignKey('user.id'))
+	contractor = relationship('User', uselist=False,
+		primaryjoin='BrandArt.contractor_id==User.id', remote_side='User.id')
+	ref = Column(String(255))
+	visible = Column(Boolean())
+
+
+class Brief(Base):
+	
+	TV = ['n/a','None','Some','Good','Great']
+	
+	FF = ['n/a','None','Some','Good','Great']
+	
+	CH = ['n/a','None','Some','Good','Great']
+	
+	LOGISTICS = ['high impact','good value','low spend']
+	
+	PRODUCTS = ['smart','durable','cheap']
+	
+	id = Column(Integer, primary_key=True)
+	brand_id = Column(Integer, ForeignKey('brand.id'))
+	brand = relationship('Brand', uselist=False,
+		primaryjoin='Brief.brand_id==Brand.id', remote_side='Brand.id')
+	contractor_id = Column(Integer, ForeignKey('user.id'))
+	contractor = relationship('User', uselist=False,
+		primaryjoin='Brief.contractor_id==User.id', remote_side='User.id')
+	tv = Column(Enum(*TV))
+	ff = Column(Enum(*FF))
+	ch = Column(Enum(*CH))
+	logistics = Column(Enum(*LOGISTICS))
+	products = Column(Enum(*PRODUCTS))
+	right_id = Column(Integer, ForeignKey('right.id'))
+	right = relationship('Right', uselist=False,
+		primaryjoin='Brief.right_id==Right.id', remote_side='Right.id',
+		back_populates='briefs')
+
+
+class Contact(Base):
+	
+	id = Column(Integer, primary_key=True)
+	from_contact_id = Column(Integer, ForeignKey('user.id'))
+	from_contact = relationship('User', uselist=False,
+		primaryjoin='Contact.from_contact_id==User.id', remote_side='User.id',
+		back_populates='can_contact')
+	to_contact_id = Column(Integer, ForeignKey('user.id'))
+	to_contact = relationship('User', uselist=False,
+		primaryjoin='Contact.to_contact_id==User.id', remote_side='User.id',
+		back_populates='allow_contact')
+	allow = Column(Boolean())
+
+
+class Contractor(Base):
+	
+	id = Column(Integer, primary_key=True)
+	brand_id = Column(Integer, ForeignKey('brand.id'))
+	brand = relationship('Brand', uselist=False,
+		primaryjoin='Contractor.brand_id==Brand.id', remote_side='Brand.id')
+	right_id = Column(Integer, ForeignKey('right.id'))
+	right = relationship('Right', uselist=False,
+		primaryjoin='Contractor.right_id==Right.id', remote_side='Right.id')
+	person_id = Column(Integer, ForeignKey('user.id'))
+	person = relationship('User', uselist=False,
+		primaryjoin='Contractor.person_id==User.id', remote_side='User.id')
+
+
+class ContractorShare(Base):
+	
+	id = Column(Integer, primary_key=True)
+	right_id = Column(Integer, ForeignKey('right.id'))
+	right = relationship('Right', uselist=False,
+		primaryjoin='ContractorShare.right_id==Right.id', remote_side='Right.id',
+		back_populates='contractor_shares')
+	person_id = Column(Integer, ForeignKey('user.id'))
+	person = relationship('User', uselist=False,
+		primaryjoin='ContractorShare.person_id==User.id', remote_side='User.id')
+	permissions = relationship('UserPermission',
+		primaryjoin='ContractorShare.id==contractorshare_permissions_userpermission.c.permissions_id',
+		secondaryjoin='UserPermission.id==contractorshare_permissions_userpermission.c.user_permission_id',
+		secondary='contractorshare_permissions_userpermission',
+		lazy='joined')
+	contractor_id = Column(Integer, ForeignKey('user.id'))
+	contractor = relationship('User', uselist=False,
+		primaryjoin='ContractorShare.contractor_id==User.id', remote_side='User.id')
+
+
+class DurationBooking(Base):
+	
+	id = Column(Integer, primary_key=True)
+	area_id = Column(Integer, ForeignKey('area.id'))
+	area = relationship('Area', uselist=False,
+		primaryjoin='DurationBooking.area_id==Area.id', remote_side='Area.id')
+	from_date = Column(DateTime)
+	to_date = Column(DateTime)
+	brand_id = Column(Integer, ForeignKey('brand.id'))
+	brand = relationship('Brand', uselist=False,
+		primaryjoin='DurationBooking.brand_id==Brand.id', remote_side='Brand.id')
+	root_id = Column(Integer)
+	booked_by_id = Column(Integer, ForeignKey('user.id'))
+	booked_by = relationship('User', uselist=False,
+		primaryjoin='DurationBooking.booked_by_id==User.id', remote_side='User.id')
+
+
+class Envelope(Base):
+	
+	id = Column(Integer, primary_key=True)
+	type = Column(String(32))
+	token = Column(String(32))
+	created = Column(DateTime)
+	sent = Column(DateTime)
+	read = Column(DateTime)
+	visited = Column(DateTime)
+	root_id = Column(Integer, ForeignKey('right.id'))
+	root = relationship('Right', uselist=False,
+		primaryjoin='Envelope.root_id==Right.id', remote_side='Right.id')
+	brand_id = Column(Integer, ForeignKey('brand.id'))
+	brand = relationship('Brand', uselist=False,
+		primaryjoin='Envelope.brand_id==Brand.id', remote_side='Brand.id')
+	sender_id = Column(Integer, ForeignKey('user.id'))
+	sender = relationship('User', uselist=False,
+		primaryjoin='Envelope.sender_id==User.id', remote_side='User.id')
+	recipient_id = Column(Integer, ForeignKey('user.id'))
+	recipient = relationship('User', uselist=False,
+		primaryjoin='Envelope.recipient_id==User.id', remote_side='User.id')
+	recipient_email = Column(String(255))
+	subject = Column(String(255))
+	body = Column(Text)
+
+
+class Event(Base):
+	
+	id = Column(Integer, primary_key=True)
+	name = Column(String(255))
+	group_id = Column(Integer, ForeignKey('event.id'))
+	group = relationship('Event', uselist=False,
+		primaryjoin='Event.group_id==Event.id', remote_side='Event.id',
+		back_populates='members')
+	from_date = Column(DateTime)
+	to_date = Column(DateTime)
+	allDay = Column(Boolean())
+	owner_id = Column(Integer, ForeignKey('user.id'))
+	owner = relationship('User', uselist=False,
+		primaryjoin='Event.owner_id==User.id', remote_side='User.id',
+		back_populates='events')
+	member_index = Column(Integer)
+	leaf = Column(Boolean())
+	members = relationship('Event', uselist=True, 
+		primaryjoin='Event.group_id==Event.id', remote_side='Event.group_id',
+		back_populates='group')
+
+
+class Log(Base):
+	
+	id = Column(Integer, primary_key=True)
+	signal = Column(String(255))
+	accl = Column(Integer)
+	message = Column(Text)
+	created = Column(String(255))
+	created_by = Column(Integer)
+
+
+class Pattern(Base):
+	
+	id = Column(Integer, primary_key=True)
+	name = Column(String(255))
+	contractor_id = Column(Integer, ForeignKey('user.id'))
+	contractor = relationship('User', uselist=False,
+		primaryjoin='Pattern.contractor_id==User.id', remote_side='User.id',
+		back_populates='patterns')
+	image = Column(String(255))
+
+
+class Product(Base):
+	
+	id = Column(Integer, primary_key=True)
+	name = Column(String(255))
+	contractor_id = Column(Integer, ForeignKey('user.id'))
+	contractor = relationship('User', uselist=False,
+		primaryjoin='Product.contractor_id==User.id', remote_side='User.id',
+		back_populates='products')
+	image = Column(String(255))
+	ref = Column(String(255))
+	type = Column(String(80))
+	substrate = Column(String(80))
+	finishing = Column(String(80))
+	width = Column(String(80))
+	height = Column(String(80))
+	depth = Column(String(80))
+	cloth_size = Column(String(80))
+	set_of = Column(Integer)
+	set_to = Column(Integer)
+	no_parts = Column(Integer)
+
+
+class ProductChoice(Base):
+	
+	QUAILITY = ['smart','durable','cheap']
+	
+	id = Column(Integer, primary_key=True)
+	area_info_id = Column(Integer, ForeignKey('area_info.id'))
+	area_info = relationship('AreaInfo', uselist=False,
+		primaryjoin='ProductChoice.area_info_id==AreaInfo.id', remote_side='AreaInfo.id',
+		back_populates='product_choices')
+	product_id = Column(Integer, ForeignKey('product.id'))
+	product = relationship('Product', uselist=False,
+		primaryjoin='ProductChoice.product_id==Product.id', remote_side='Product.id')
+	quaility = Column(Enum(*QUAILITY))
+	cost = Column(Numeric(36,12))
+
+
+class Right(Base):
+	
+	id = Column(Integer, primary_key=True)
+	area_id = Column(Integer, ForeignKey('area.id'))
+	area = relationship('Area', uselist=False,
+		primaryjoin='Right.area_id==Area.id', remote_side='Area.id')
+	event_id = Column(Integer, ForeignKey('event.id'))
+	event = relationship('Event', uselist=False,
+		primaryjoin='Right.event_id==Event.id', remote_side='Event.id')
+	root_id = Column(Integer, ForeignKey('right.id'))
+	root = relationship('Right', uselist=False,
+		primaryjoin='Right.root_id==Right.id', remote_side='Right.id',
+		back_populates='rights')
+	owner_id = Column(Integer, ForeignKey('user.id'))
+	owner = relationship('User', uselist=False,
+		primaryjoin='Right.owner_id==User.id', remote_side='User.id')
+	price = Column(Numeric(36,12))
+	promoters = relationship('User',
+		primaryjoin='Right.id==right_promoters_user.c.promoters_id',
+		secondaryjoin='User.id==right_promoters_user.c.user_id',
+		secondary='right_promoters_user',
+		lazy='joined')
+	allocations = relationship('Allocation', uselist=True, 
+		primaryjoin='Allocation.right_id==Right.id', remote_side='Allocation.right_id',
+		back_populates='right')
+	briefs = relationship('Brief', uselist=True, 
+		primaryjoin='Brief.right_id==Right.id', remote_side='Brief.right_id',
+		back_populates='right')
+	contractor_shares = relationship('ContractorShare', uselist=True, 
+		primaryjoin='ContractorShare.right_id==Right.id', remote_side='ContractorShare.right_id',
+		back_populates='right')
+	rights = relationship('Right', uselist=True, 
+		primaryjoin='Right.root_id==Right.id', remote_side='Right.root_id',
+		back_populates='root')
+
+
+class User(Base):
+	
+	id = Column(Integer, primary_key=True)
+	email = Column(String(128))
+	_password = Column(String(32))
+	firstname = Column(String(80))
+	lastname = Column(String(80))
+	company = Column(String(80))
+	pro_user_id = Column(Integer)
+	permissions = relationship('UserPermission',
+		primaryjoin='User.id==user_permissions_userpermission.c.permissions_id',
+		secondaryjoin='UserPermission.id==user_permissions_userpermission.c.user_permission_id',
+		secondary='user_permissions_userpermission',
+		lazy='joined', back_populates='people')
+	tokens = relationship('ApiToken', uselist=True, 
+		primaryjoin='ApiToken.owner_id==User.id', remote_side='ApiToken.owner_id',
+		back_populates='owner')
+	areas = relationship('Area', uselist=True, 
+		primaryjoin='Area.owner_id==User.id', remote_side='Area.owner_id',
+		back_populates='owner')
+	brands = relationship('Brand',
+		secondaryjoin='Brand.id==brand_owners_user.c.owners_id',
+		primaryjoin='User.id==brand_owners_user.c.user_id',
+		secondary='brand_owners_user',
+		lazy='joined', back_populates='owners')
+	can_contact = relationship('Contact', uselist=True, 
+		primaryjoin='Contact.from_contact_id==User.id', remote_side='Contact.from_contact_id',
+		back_populates='from_contact')
+	allow_contact = relationship('Contact', uselist=True, 
+		primaryjoin='Contact.to_contact_id==User.id', remote_side='Contact.to_contact_id',
+		back_populates='to_contact')
+	events = relationship('Event', uselist=True, 
+		primaryjoin='Event.owner_id==User.id', remote_side='Event.owner_id',
+		back_populates='owner')
+	patterns = relationship('Pattern', uselist=True, 
+		primaryjoin='Pattern.contractor_id==User.id', remote_side='Pattern.contractor_id',
+		back_populates='contractor')
+	products = relationship('Product', uselist=True, 
+		primaryjoin='Product.contractor_id==User.id', remote_side='Product.contractor_id',
+		back_populates='contractor')
+
+
+class UserPermission(Base):
+	
+	id = Column(Integer, primary_key=True)
+	name = Column(String(255))
+	tokens = relationship('ApiToken',
+		secondaryjoin='ApiToken.id==apitoken_permissions_userpermission.c.permissions_id',
+		primaryjoin='UserPermission.id==apitoken_permissions_userpermission.c.user_permission_id',
+		secondary='apitoken_permissions_userpermission',
+		lazy='joined', back_populates='permissions')
+	people = relationship('User',
+		secondaryjoin='User.id==user_permissions_userpermission.c.permissions_id',
+		primaryjoin='UserPermission.id==user_permissions_userpermission.c.user_permission_id',
+		secondary='user_permissions_userpermission',
+		lazy='joined', back_populates='permissions')
+
+
+class WebSession(Base):
+	
+	id = Column(Integer, primary_key=True)
+	person_id = Column(Integer, ForeignKey('user.id'))
+	person = relationship('User', uselist=False,
+		primaryjoin='WebSession.person_id==User.id', remote_side='User.id')
+	ipaddress = Column(String(255))
+	client = Column(Text)
+	started = Column(DateTime)
+	ended = Column(DateTime)
 

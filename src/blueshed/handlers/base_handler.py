@@ -29,5 +29,5 @@ class BaseHandler(tornado.web.RequestHandler):
     
         
     def set_current_user(self, accl_key):
-        self.set_secure_cookie(self.cookie_name, accl_key)
+        self.set_secure_cookie(self.cookie_name, str(accl_key))
 

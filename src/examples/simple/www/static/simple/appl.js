@@ -35,7 +35,7 @@ define(
 						}
 					}
 					msg.message.permissions = ko.observableArray(msg.message.permissions);
-					this.store.init(msg.model);
+					this.store.init(msg.model, msg.methods);
 					this.user(msg.message);
 				} else if(msg.signal == "user updated"){
 					if(ko.unwrap(this.user().id)==msg.message.id){
@@ -46,6 +46,8 @@ define(
 					}
 				} else if(msg.signal == "_service_status_"){
 					this.service_status(msg.message);
+				} else if(msg.signal == "echo"){
+					this.notify(msg.message,"info",".top-left");
 				}
 			},this);
 
