@@ -6,15 +6,26 @@ define(
      "blueshed/components/inspector/store",
      "blueshed/components/inspector/main",
      "blueshed/components/modeling/main",
+     "components/change-password/main",
+     "components/edit-profile/main",
+     "components/online-users/main",
      "components/hello/main"], 
      
 	function (ko, Appl, Connection, Store,
-			  InspectorPanel, ModelingPanel, Hello) {
+			  InspectorPanel, 
+			  ModelingPanel, 
+			  ChangePassword,
+			  EditProfile,
+			  OnlineUsers,
+			  Hello) {
     	'use strict';
 
         ko.components.register("hello",Hello);   
         ko.components.register("inspector-panel",InspectorPanel);
-        ko.components.register("modeling-panel",ModelingPanel); 	
+        ko.components.register("modeling-panel",ModelingPanel); 
+        ko.components.register("change-password",ChangePassword);
+        ko.components.register("edit-profile",EditProfile);
+        ko.components.register("online-users",OnlineUsers);	
         
     	Appl.prototype.init = function(){
             this.title("Simple");
@@ -72,8 +83,13 @@ define(
     		        	this.component("hello");
     		        }.bind(this)
     			}));
+            
+            this.routes.add_to_right_menu({component_name:'online-users',appl:this});
             this.add_service_menu("Inspector","inspector-panel","inspector/:id:","","#/inspector");
             this.add_service_menu("Modeling","modeling-panel","modeling/:id:","","#/modeling");
+			this.add_page("-");
+			this.add_page("Edit Profile",this.edit_profile.bind(this));
+			this.add_page("Change Password",this.change_password.bind(this));
     	}
     	
 		var next_start = Appl.prototype.start;
@@ -109,6 +125,22 @@ define(
 				this.ws_version = -1; // will reload on reconnect
 			}.bind(this));
 		};
+		
+		Appl.prototype.save_preferences = function(namespace,values){
+			if(!this.user.preferences){
+				this.user.preferences = {};
+			}
+			this.user.preferences[namespace]=values;
+			this.connection.send({action:"save_prefernces", args:{preferences:this.user.preferences}});
+		};
+		
+        Appl.prototype.change_password = function(){
+        	this.open_dialog("change-password", {appl:this});
+        };
+		
+        Appl.prototype.edit_profile = function(){
+        	this.open_dialog("edit-profile", {appl:this, user: this.user()});
+        };
 
     	return Appl;
 	}

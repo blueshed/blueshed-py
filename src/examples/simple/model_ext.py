@@ -4,6 +4,8 @@ Created on 12 Jul 2015
 @author: peterb
 '''
 from blueshed.model_helpers.sqla_views import view
+from blueshed.model_helpers.sql_extensions import JSONEncodedDict
+from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.sql.expression import select, join
 from sqlalchemy.sql.functions import func
 
@@ -13,8 +15,10 @@ from blueshed.model_helpers.access_model import Person, Permission,\
 
 
 Person._token = Column(String(80))
+Person._preferences = Column(MutableDict.as_mutable(JSONEncodedDict))
 Person.firstname = Column(String(80))
 Person.lastname = Column(String(80))
+Person.photo = Column(String(128))
 
 '''
     An example View

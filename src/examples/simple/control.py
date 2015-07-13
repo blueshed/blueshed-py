@@ -3,7 +3,6 @@ Created on 8 Jul 2015
 
 @author: peterb
 '''
-from pkg_resources import resource_filename  # @UnresolvedImport
 from blueshed.model_helpers.access_mixin import Access, requires_permissions
 from blueshed.model_helpers.base_control import BaseControl
 from blueshed.model_helpers.fetch_and_carry_mixin import FetchAndCarryMixin
@@ -55,6 +54,7 @@ class Control(BaseControl,Access,FetchAndCarryMixin):
                 self._status['clients']=list(set(client.current_user for client in self._clients)) 
                 result = self._fc_serialize(user)
                 result["permissions"] = [p.name for p in user.permissions]
+                result["prefernces"] = user._preferences
                 return result                    
                 
         
@@ -80,6 +80,13 @@ class Control(BaseControl,Access,FetchAndCarryMixin):
         values = [row._asdict() for row in q]
         types = [(col.name,str(col.type)) for col in q.statement.columns]
         return types,values
+    
+    
+    def save_prefernces(self, accl, preferences):
+        with self.session as session:
+            user = session.query(model.Person).get(accl)
+            user._preferences = preferences
+            session.commit()
 
         
     @requires_permissions("admin")

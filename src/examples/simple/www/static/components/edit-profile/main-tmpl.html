@@ -1,0 +1,53 @@
+<div class="modal-dialog">
+  	<div class="modal-content">
+		<div class="modal-header">
+	    	<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	    	<h4>Edit profile</h4>
+	  	</div>
+	  	<div class="modal-body">
+			<blue-error params="error:error"></blue-error>
+			<form class="form-horizontal" role="form" data-bind="submit:submit">
+				<blue-string-field 
+					params="name:'email',value:email,placeholder:'Email',enable:false"></blue-string-field>
+				<blue-string-field 
+					params="name:'first name',value:firstname,placeholder:'First name'"></blue-string-field>
+				<blue-string-field 
+					params="name:'last name',value:lastname,placeholder:'Last name'"></blue-string-field>
+				<div class="form-group">
+					<label class="col-sm-3 control-label">photo:</label>
+					<div class="col-sm-5" data-bind="if:photo">
+						<div class="thumbnail">
+							<img data-bind="attr:{src:photo}"/>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div id="entry_photo_dropzone" data-bind="dropzone:$component.photo_args"></div>
+					</div>
+				</div>
+				<!-- ko if: $component.appl.is_admin -->
+				<div class="form-group">
+					<label for="inputPersonPermissions" class="col-sm-3 control-label">Permissions</label>
+					<div class="col-sm-9" data-bind="foreach:$component.all_permissions">
+						<div class="checkbox">
+						  <label>
+						    <input type="checkbox" 
+						    	   data-bind="attr:{value:name},
+						    	   			  checked:$parent.permissions,
+						    	   			  checkedValue:name">
+						     <span data-bind="text:name"></span>
+						  </label>
+						</div>
+					</div>
+				</div>
+				<!-- /ko -->
+			</form>
+	  	</div>
+	  	<div class="modal-footer">
+	    	<a href="#" class="btn" data-dismiss="modal">Cancel</a>
+	    	<button class="btn btn-primary" 
+	    	   data-bind="click:submit,enable:isValid">
+	    	   Save
+	    	</button>
+	  	</div>
+	</div>
+</div>
