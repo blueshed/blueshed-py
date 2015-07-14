@@ -1,27 +1,25 @@
 <div class="panel panel-default" data-bind="with:model">
 	<div class="panel-heading">
 		<!-- ko if:$parent.edit_name -->
-		<div class="pull-right">
-			<button class="btn btn-success btn-sm"
-					data-bind="click:$parent.add" style="margin-left:6px;">
-				<span class="glyphicon glyphicon-plus"></span>
-			</button>
-			<button class="btn btn-danger btn-sm"
-					data-bind="click:$parent.remove">
-				<span class="glyphicon glyphicon-trash"></span>
-			</button>
+		<button class="btn btn-success pull-right"
+				data-bind="click:$parent.add" style="margin-left:6px;">
+			<span class="glyphicon glyphicon-plus"></span>
+		</button>
+		<div class="input-group col-md-7">
+		    <label class="sr-only" for="class_name_input">class name</label>
+			<input type="text" 
+				   class="form-control" 
+				   data-bind="textInput:$parent.edit_name,
+				   			  hasFocus:$parent.edit_model_name" 
+				   id="class_name_input"
+				   autofocus />
+  			<span class="input-group-btn">
+				<button class="btn btn-danger"
+						data-bind="click:$parent.remove">
+					<span class="glyphicon glyphicon-trash"></span>
+				</button>
+			</span>
 		</div>
-		<form class="form-inline">
-			<div class="form-group">
-			    <label class="sr-only" for="class_name_input">class name</label>
-				<input type="text" 
-					   class="form-control col-md-8" 
-					   data-bind="textInput:$parent.edit_name,
-					   			  hasFocus:$parent.edit_model_name" 
-					   id="class_name_input"
-					   autofocus />
-			</div>
-		</form>
 		<!-- /ko -->
 		<!-- ko ifnot:$parent.edit_name -->
 		<h3 class="panel-title" data-bind="text:name">Panel title</h3>
