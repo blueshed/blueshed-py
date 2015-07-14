@@ -48,7 +48,7 @@ class AuditListener(object):
             if not isinstance(item, Audit):
                 Audit.create_version(item, session, 'created', self.accl_key)
             else:
-                self._audit_broadcast_.append(utils.dumps(item.serialize))
+                self._audit_broadcast_.append(utils.dumps(item._serialize))
 
             
     def _after_rollback(self, session):

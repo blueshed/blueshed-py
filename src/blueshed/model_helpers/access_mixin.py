@@ -36,7 +36,7 @@ class Access(object):
         with self.session as session:
             user = session.query(model.Person).filter_by(_token=token).first()
             if user is not None and "api" in [p.name for p in user.permissions]:
-                return user.serialize
+                return user._serialize
             
         
     def login(self, email, password):
@@ -89,7 +89,7 @@ class Access(object):
         if user_id is None: return
         with self.session as session:
             user = session.query(model.Person).get(user_id)
-            return user.serialize
+            return user._serialize
         
     
     def _add_user(self, details):

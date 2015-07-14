@@ -103,7 +103,7 @@ class CacheItem(object):
                         broadcast_on_success(session, signal=signal, message=value)
             for item in session.deleted:
                 if isinstance(item, clazz):
-                    cls.remove_cache(session, item.id, item.serialize, session.info.get("accl_key"))
+                    cls.remove_cache(session, item.id, item._serialize, session.info.get("accl_key"))
                     if signal:
                         broadcast_on_success(session, signal=signal, message={"id":-item.id})
         

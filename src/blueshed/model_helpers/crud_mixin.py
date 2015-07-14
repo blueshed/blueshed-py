@@ -24,7 +24,7 @@ class Crud(object):
             type_ = getattr(self._model_,type)
             query = session.query(type_)
             if id:
-                return self.serialize(query.get(id))
+                return self._serialize(query.get(id))
             elif attr is not None:
                 attr_= getattr(type_,attr)
                 if fkey is not None:
@@ -33,14 +33,14 @@ class Crud(object):
                     query = query.filter(attr_.like("{}%%".format(filter)))
                     query = query.order_by(attr_)
                 return {
-                    "rows": [self.serialize(item) for item in query] 
+                    "rows": [self._serialize(item) for item in query] 
                 }
             else:
                 total = query.count()
                 limit_query = query.limit(limit or 10).offset(offset or 0)
                 return {
                         "total": total,
-                        "rows": [self.serialize(item) for item in limit_query] 
+                        "rows": [self._serialize(item) for item in limit_query] 
                        }
                 
                 
@@ -55,20 +55,20 @@ class Crud(object):
                     session.commit()
                     self._broadcast_on_success("deleted",{"id": id_, "type_": item["_type"]})
                 else:
-                    self.serialize(obj,item)
+                    self._serialize(obj,item)
                     session.commit()
-                    self._broadcast_on_success("updated", self.serialize(obj))
+                    self._broadcast_on_success("updated", self._serialize(obj))
             else:
                 obj = type_()
                 session.add(obj)
-                self.serialize(obj,item)
+                self._serialize(obj,item)
                 session.commit()
-                self._broadcast_on_success("added", self.serialize(obj))
+                self._broadcast_on_success("added", self._serialize(obj))
                 return {"added": {"id": obj.id, "type_": item["_type"]}}
         
     
     
-    def serialize(self, obj, from_obj=None):
+    def _serialize(self, obj, from_obj=None):
         if from_obj is not None:
             description_ = self._description_[obj.__class__.__name__]
             for key,value in from_obj.items():

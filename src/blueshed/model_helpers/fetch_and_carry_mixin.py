@@ -19,7 +19,7 @@ from collections import OrderedDict
 from sqlalchemy.inspection import inspect
 from sqlalchemy.sql.expression import asc, desc
 from sqlalchemy.orm import subqueryload
-from blueshed.utils.utils import dumps, loads, parse_date, parse_time
+from blueshed.utils.utils import parse_date, parse_time
 
 
 class FetchAndCarryMixin(object):
@@ -36,6 +36,14 @@ class FetchAndCarryMixin(object):
               order_by=None, order_by_asc=False,
               ignore=None, include=None,
               depth=0):
+        """
+            Returns the result of a query: a list as rows or object as value
+            it a present only supports a single order and direction
+            a single filter or match. The include and ignore are for the
+            primary object and do not support depth. Depth will inflate relations
+            and decrement as it goes down the tree. A depth of 0 will
+            return the table row.
+        """
         logging.debug(dict(type=type, id=id, attr=attr, 
               filter=filter, match=match, limit=limit, offset=offset, 
               order_by=order_by, order_by_asc=order_by_asc,
@@ -136,6 +144,11 @@ class FetchAndCarryMixin(object):
     
     
     def carry(self, accl, item, to_add=None, to_remove=None):
+        """
+            Will store the item and add to and remove from its relations
+            related items are described by a surrogate: {attr,_type,id}
+            and so must exist to be found by a query
+        """
         logging.debug(item)
         result = None
         to_broadcast = []

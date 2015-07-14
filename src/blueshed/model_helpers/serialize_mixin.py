@@ -14,7 +14,7 @@ from sqlalchemy.orm.session import object_session
 class SerializeMixin(object):
     
     @property
-    def serialize(self):
+    def _serialize(self):
         return self._to_pairs()        
     
     def _to_pairs(self, ignore=None):
@@ -26,8 +26,8 @@ class SerializeMixin(object):
         return result
     
     
-    @serialize.setter
-    def serialize(self, obj):
+    @_serialize.setter
+    def _serialize(self, obj):
         self._from_pairs(obj)
         
     def _from_pairs(self, obj):

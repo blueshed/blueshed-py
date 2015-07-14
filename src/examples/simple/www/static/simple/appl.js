@@ -3,9 +3,9 @@ define(
 	["knockout",
      "blueshed/main",
      "blueshed/connection",
-     "blueshed/components/inspector/store",
+     "blueshed/store",
      "blueshed/components/inspector/main",
-     "blueshed/components/modeling/main",
+     "components/modeling/main",
      "components/change-password/main",
      "components/edit-profile/main",
      "components/online-users/main",
@@ -34,6 +34,29 @@ define(
 			this.service_status = ko.observable();
 			this.loading = ko.observable(false);
 			this.user = ko.observable();
+			
+			// initialize routes
+            this.init_routes();
+            this.routes.set_default(
+            	this.routes.add_to_left_menu({
+    				route:"hello",    // the name to pass to hasher
+    				title:"Hello",    // the menu title
+    				href:"",    	  // the href for the menu item
+    				icon:null,        // the fa icon to set in menu item
+    				action: function(){
+    					this.component_params.args=arguments;
+    					this.component_params.title="Hello World, again!"
+    		        	this.component("hello");
+    		        }.bind(this)
+    			}));
+            
+            this.routes.add_to_right_menu({component_name:'online-users',appl:this});
+            this.add_service_menu("Inspector","inspector-panel","inspector/:id:","","#/inspector");
+            this.add_service_menu("Modeling","modeling-panel","modeling/:id:","","#/modeling");
+			this.add_page("-");
+			this.add_page("Edit Profile",this.edit_profile.bind(this));
+			this.add_page("Change Password",this.change_password.bind(this));
+			
 			
             this.connection.broadcast.subscribe(function(msg){
 				if(msg.signal == "user"){
@@ -70,26 +93,6 @@ define(
 			},this);
 
             this.loading(true);
-            this.init_routes();
-            this.routes.set_default(
-            	this.routes.add_to_left_menu({
-    				route:"hello",    // the name to pass to hasher
-    				title:"Hello",    // the menu title
-    				href:"",    	  // the href for the menu item
-    				icon:null,        // the fa icon to set in menu item
-    				action: function(){
-    					this.component_params.args=arguments;
-    					this.component_params.title="Hello World, again!"
-    		        	this.component("hello");
-    		        }.bind(this)
-    			}));
-            
-            this.routes.add_to_right_menu({component_name:'online-users',appl:this});
-            this.add_service_menu("Inspector","inspector-panel","inspector/:id:","","#/inspector");
-            this.add_service_menu("Modeling","modeling-panel","modeling/:id:","","#/modeling");
-			this.add_page("-");
-			this.add_page("Edit Profile",this.edit_profile.bind(this));
-			this.add_page("Change Password",this.change_password.bind(this));
     	}
     	
 		var next_start = Appl.prototype.start;
@@ -141,6 +144,17 @@ define(
         Appl.prototype.edit_profile = function(){
         	this.open_dialog("edit-profile", {appl:this, user: this.user()});
         };
+		
+		Appl.prototype.fetch_model = function(callback,err_back){
+			this.connection.send({
+				action: "fetch_model"
+			},function(response){
+				if(response.result){
+					var new_models = JSON.parse(response.result);
+					callback(new_models);
+				}
+			}.bind(this),err_back);
+		};
 
     	return Appl;
 	}
