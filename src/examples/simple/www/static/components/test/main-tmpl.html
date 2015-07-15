@@ -1,0 +1,52 @@
+<!-- test-panel -->
+<div id="test-panel">
+	<div class="panel panel-success panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title">
+				<span class="badge pull-right"
+					  data-bind="text:items().length"></span>
+				Test Panel
+			</h3>
+		</div>
+		<div class="list-group" data-bind="foreach:items">
+			<a href="#" class="list-group-item" 
+				data-bind="click:$parent.selected,
+						   css:{active:$parent.selected()==$data}">
+				<span data-bind="text:name"></span>
+			</a>
+		</div>
+		<!-- ko with:selected -->
+		<div class="panel-body fade in">
+			<button type="button" class="close" aria-label="Close"
+					data-bind="click:$parent.selected.bind($parent,null)">
+					<span aria-hidden="true">&times;</span></button>
+			<div class="clearfix"></div>
+			<div class="row">
+				<div class="col-md-6">
+					<span data-bind="text:id"></span>
+				</div>
+				<div class="col-md-6">
+					<span data-bind="text:name"></span>
+				</div>
+			</div>
+		</div>
+		<!-- /ko -->
+		<table class="table table-bordered table-condensed">
+			<thead>
+				<tr>
+					<th>#</th>
+				</tr>
+			</thead>
+			<tbody data-bind="foreach:items">
+				<tr data-bind="css:{active:$parent.selected()==$data}">
+					<td data-bind="text:id"></td>
+				</tr>
+			</tbody>
+		</table>
+		<div class="panel-footer">
+			&nbsp;
+		</div>
+	</div>
+</div>
+
+<div data-bind="template:{ afterRender: $component.init.bind($component) }"></div>

@@ -12,29 +12,13 @@ define(["knockout"],
 
 	SQLAlchemy.prototype.to_text = function(models){
 		var includes = [
+		    "from blueshed.model_helpers.base import Base",
 			"from sqlalchemy.types import String, Integer, Numeric, DateTime, Date, Time, Enum, Boolean, Text",
 			"from sqlalchemy.schema import Table, Column, ForeignKey",
 			"from sqlalchemy.orm import relationship, backref", 
 			"from sqlalchemy.ext.declarative.api import declared_attr, has_inherited_table, declarative_base",
 			"import re",
 			"",
-			"",
-			"#see: http://docs.sqlalchemy.org/en/rel_0_8/orm/extensions/declarative.html#augmenting-the-base",
-			"",
-			"class _Base_(object):",
-			"    ''' provides default tablename and table_args properties'''",
-			"",
-			"     __table_args__ = {'mysql_engine': 'InnoDB'}",
-			"",
-			"    @declared_attr",
-    		"    def __tablename__(self):",
-	        "        if has_inherited_table(self):",
-            "            return None",
-	        "        name = self.__name__",
-        	"        return (name[0].lower() +",
-            "            re.sub(r'([A-Z])', lambda m:'_' + m.group(0).lower(), name[1:]))",
-			"",
-			"Base = declarative_base(cls=_Base_)",
 			"",
 			""
 		];
@@ -104,15 +88,15 @@ define(["knockout"],
 	};
 
 	SQLAlchemy.prototype.attr_python = function(attr, out, model, statics, models, many_to_many, indent){
-	
+		var doc = attr.doc ? ", doc='"+ attr.doc + "'" :"";
 		if(attr.type === "String"){
-			out.push(indent  + attr.name + " = Column(String(" + attr.size + "), doc='"+ attr.doc + "')");
+			out.push(indent  + attr.name + " = Column(String(" + attr.size + ")" + doc + ")");
 		}
 		else if(attr.type === "Numeric"){
-			out.push(indent  +  attr.name + " = Column(Numeric(" + attr.precision + "," + attr.scale + "), doc='"+ attr.doc + "')");
+			out.push(indent  +  attr.name + " = Column(Numeric(" + attr.precision + "," + attr.scale + ")" + doc + ")");
 		}
 		else if(attr.type === "Boolean"){
-			out.push(indent  +  attr.name + " = Column(Boolean(), doc='"+ attr.doc + "')");
+			out.push(indent  +  attr.name + " = Column(Boolean()" + doc + ")");
 		}
 		else if(attr.type === "Enum"){
 			var values = attr.values.split(",");
@@ -122,13 +106,13 @@ define(["knockout"],
 			}
 			statics.push(indent + attr.name.toUpperCase() + " = [" + enum_list.join(",") + "]");
 			statics.push(indent);
-			out.push(indent  +  attr.name + " = Column(Enum(*" + attr.name.toUpperCase() + "), doc='"+ attr.doc + "')");
+			out.push(indent  +  attr.name + " = Column(Enum(*" + attr.name.toUpperCase() + ")" + doc + ")");
 		}
 		else if(["Datetime"].indexOf(attr.type) !== -1){
-			out.push(indent  +  attr.name + " = Column(DateTime, doc='"+ attr.doc + "')");
+			out.push(indent  +  attr.name + " = Column(DateTime" + doc + ")");
 		}
 		else if(["Integer","Date","Time","Text"].indexOf(attr.type) !== -1){
-			out.push(indent  +  attr.name + " = Column(" + attr.type + ", doc='"+ attr.doc + "')");
+			out.push(indent  +  attr.name + " = Column(" + attr.type + "" + doc + ")");
 		} else {
 			var scalar = models[attr.type];
 			if(attr.m2m === true){
@@ -137,6 +121,9 @@ define(["knockout"],
 				var field_from = attr.name + "_id";
 				var field_to = attr.type.toUnderscore() + "_id";
 				var backref = attr.backref ? ", back_populates='" + attr.backref + "'" : '';
+				var comment = attr.backref ? 
+					"mysql_comment='{\\\"back_ref\\\":\\\""+model.name+"."+attr.name+"\\\", \\\"back_populates\\\":\\\""+attr.type+"."+attr.backref + "\\\"}'" :
+					"mysql_comment='{\\\"back_ref\\\":\\\""+attr.type+"."+attr.name+"\\\"}'";
 				var secondary_table = model.name.toLowerCase() + "_" + attr.name + "_" + attr.type.toLowerCase();
 				var primaryjoin = model.name + ".id==" + secondary_table + ".c." + field_from;
 				var secondaryjoin = attr.type + ".id==" + secondary_table + ".c." + field_to;
@@ -145,11 +132,12 @@ define(["knockout"],
 				out.push(indent + indent + "primaryjoin='" + primaryjoin + "',");
 				out.push(indent + indent + "secondaryjoin='" + secondaryjoin + "',");
 				out.push(indent + indent + "secondary='" + secondary_table + "',");
-				out.push(indent + indent + "lazy='joined'" + backref + ", doc='"+ attr.doc + "')");
+				out.push(indent + indent + "lazy='joined'" + backref + doc + ")");
 			
 				many_to_many.push(secondary_table + " = Table('" + secondary_table + "', Base.metadata,");
 				many_to_many.push(indent + "Column('" + field_from + "', Integer, ForeignKey('" + fkey_from + "')),");
 				many_to_many.push(indent + "Column('" + field_to + "', Integer, ForeignKey('" + fkey_to + "')),");
+				many_to_many.push(indent + comment + ",");
 				many_to_many.push(indent + "mysql_engine='InnoDB')");
 				many_to_many.push("");
 				many_to_many.push("");
@@ -163,7 +151,7 @@ define(["knockout"],
 						) +  "))");
 				out.push(indent + attr.name + " = relationship('" + attr.type + "', uselist=False,");
 				out.push(indent + indent + "primaryjoin='"+ primaryjoin + "', ");
-				out.push(indent + indent + "remote_side='"+ attr.type +".id'" + backref + ", doc='"+ attr.doc + "')");
+				out.push(indent + indent + "remote_side='"+ attr.type +".id'" + backref + "" + doc + ")");
 			}
 		}
 	};

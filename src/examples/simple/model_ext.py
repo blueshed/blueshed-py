@@ -15,7 +15,7 @@ from blueshed.model_helpers.access_model import Person, Permission,\
 
 
 Person._token = Column(String(80))
-Person._preferences = Column(MutableDict.as_mutable(JSONEncodedDict))
+Person._preferences = Column(MutableDict.as_mutable(JSONEncodedDict(255)))
 Person.firstname = Column(String(80))
 Person.lastname = Column(String(80))
 Person.photo = Column(String(128))

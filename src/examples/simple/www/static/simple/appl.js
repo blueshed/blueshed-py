@@ -9,6 +9,7 @@ define(
      "components/change-password/main",
      "components/edit-profile/main",
      "components/online-users/main",
+     "components/test/main",
      "components/hello/main"], 
      
 	function (ko, Appl, Connection, Store,
@@ -17,10 +18,12 @@ define(
 			  ChangePassword,
 			  EditProfile,
 			  OnlineUsers,
-			  Hello) {
+			  TestPanel,
+			  HelloPanel) {
     	'use strict';
 
-        ko.components.register("hello",Hello);   
+        ko.components.register("hello-panel",HelloPanel);   
+        ko.components.register("test-panel",TestPanel);   
         ko.components.register("inspector-panel",InspectorPanel);
         ko.components.register("modeling-panel",ModelingPanel); 
         ko.components.register("change-password",ChangePassword);
@@ -46,11 +49,12 @@ define(
     				action: function(){
     					this.component_params.args=arguments;
     					this.component_params.title="Hello World, again!"
-    		        	this.component("hello");
+    		        	this.component("hello-panel");
     		        }.bind(this)
     			}));
-            
             this.routes.add_to_right_menu({component_name:'online-users',appl:this});
+            
+            this.add_menu_left("Test",'test-panel',"test","","#/test");
             this.add_service_menu("Inspector","inspector-panel","inspector/:id:","","#/inspector");
             this.add_service_menu("Modeling","modeling-panel","modeling/:id:","","#/modeling");
 			this.add_page("-");
