@@ -1,0 +1,55 @@
+@import url("../../bower_components/gridster/dist/jquery.gridster.css");
+
+.gridster {
+    width: 100%;
+    margin: 0 auto;
+}
+
+.gridster ul, .gridster ol {
+    list-style: none;
+    min-width: 100%;
+}
+
+.gridster .gs-w {
+    background: #FCF0AD;
+    cursor: pointer;
+    -webkit-box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    overflow: hidden;
+}
+
+.gridster .player {
+    -webkit-box-shadow: 3px 3px 5px rgba(0,0,0,0.3);
+    box-shadow: 3px 3px 5px rgba(0,0,0,0.3);
+}
+
+.gridster .preview-holder {
+    border: none!important;
+    border-radius: 0!important;
+    background: rgba(0,0,0,.2)!important;
+}
+.widget-item{
+	position:relative;
+	overflow: hidden;
+}
+.widget-item .close{
+	position:absolute;
+	right:0;
+	top:0;
+	padding: 1px 5px;
+	font-size:14px;
+	z-index: 5;
+}
+.widget-item img{
+	z-index: 4;
+}
+.widget-item p{
+	padding: 2px 4px;
+}
+.widget-item .map{
+	height: 100%;
+	width: 100%;
+}
+.editable-map{
+	width: 100%;
+}

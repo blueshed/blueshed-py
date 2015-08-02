@@ -44,8 +44,9 @@ class WebsocketHandler(websocket.WebSocketHandler):
                             "signal":"user",
                             "message": user,
                             "ws_version": self.application.settings.get('ws_version',1),
+                            "ws_config": self.application.settings.get("ws_config",{}),
                             "model": self.control._fc_description,
-                            "methods": self.control._fc_methods
+                            "methods": self.control._fc_methods,
                             })
         else:
             self.write_message(utils.dumps({'access_error':True}))

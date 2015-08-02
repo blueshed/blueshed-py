@@ -1,34 +1,44 @@
 
 define(
 	["knockout",
+	 "text!/config",
      "blueshed/main",
      "blueshed/connection",
      "blueshed/store",
+     "blueshed/utils/random-str",
      "blueshed/components/inspector/main",
-     "components/modeling/main",
+     "blueshed/components/modeling_v2/main",
+     "blueshed/components/s3-browser/main",
      "components/change-password/main",
      "components/edit-profile/main",
      "components/online-users/main",
      "components/test/main",
+     "components/notes/main",
      "components/hello/main"], 
      
-	function (ko, Appl, Connection, Store,
+	function (ko, CONFIG, Appl, Connection, Store, randomStr,
 			  InspectorPanel, 
 			  ModelingPanel, 
+			  S3Browser,
 			  ChangePassword,
 			  EditProfile,
 			  OnlineUsers,
 			  TestPanel,
+			  NotesPanel,
 			  HelloPanel) {
     	'use strict';
 
         ko.components.register("hello-panel",HelloPanel);   
-        ko.components.register("test-panel",TestPanel);   
+        ko.components.register("test-panel",TestPanel);     
+        ko.components.register("notes-panel",NotesPanel);   
         ko.components.register("inspector-panel",InspectorPanel);
         ko.components.register("modeling-panel",ModelingPanel); 
+        ko.components.register("s3-browser",S3Browser);
         ko.components.register("change-password",ChangePassword);
         ko.components.register("edit-profile",EditProfile);
         ko.components.register("online-users",OnlineUsers);	
+        
+        CONFIG = JSON.parse(CONFIG);
         
     	Appl.prototype.init = function(){
             this.title("Simple");
@@ -53,10 +63,23 @@ define(
     		        }.bind(this)
     			}));
             this.routes.add_to_right_menu({component_name:'online-users',appl:this});
-            
+
             this.add_menu_left("Test",'test-panel',"test","","#/test");
+            this.add_menu_left("Notes",'notes-panel',"notes/:id:","","#/notes");
             this.add_service_menu("Inspector","inspector-panel","inspector/:id:","","#/inspector");
             this.add_service_menu("Modeling","modeling-panel","modeling/:id:","","#/modeling");
+            this.add_page("S3 Browser",function(){
+            	this.component_params.AWS_AccessKeyId=CONFIG.aws_access_key_id;
+            	this.component_params.AWS_SecretAccessKey=CONFIG.aws_secret_access_key;
+            	this.component_params.AWS_BucketName=CONFIG.s3_bucket;
+            	this.component_params.AWS_Region=CONFIG.s3_bucket_region;
+            	this.component_params.AWS_Prefix="";
+            	this.component_params.s3_base_url=CONFIG.s3_base_url;
+            	this.component_params.s3_upload_url=CONFIG.s3_upload_url;
+    			this.component_params.args=arguments;
+        		this.component("s3-browser");
+        	}.bind(this),"s3","#/s3","fa fa-cloud");
+            
 			this.add_page("-");
 			this.add_page("Edit Profile",this.edit_profile.bind(this));
 			this.add_page("Change Password",this.change_password.bind(this));
@@ -73,6 +96,7 @@ define(
 						}
 					}
 					msg.message.permissions = ko.observableArray(msg.message.permissions);
+					this.config = msg.ws_config;
 					this.store.init(msg.model, msg.methods);
 					this.user(msg.message);
 				} else if(msg.signal == "user updated"){
@@ -159,6 +183,35 @@ define(
 				}
 			}.bind(this),err_back);
 		};
+		
+		Appl.prototype.photo_args = function(prefix, photo){
+        	var args = {
+        		url: "/images/",
+        		maxFiles:1,
+        		createImageThumbnails: true,
+				success: function(file,response){
+					if(response.error){
+						this.error(response.error);
+						return;
+					}
+					photo(response.result.file.thumb);
+				}.bind(this),
+				sending: function(file, xhr, formData) {
+					formData.append("prefix", prefix + "/" + randomStr(8));
+				}.bind(this),
+				complete:function(file){
+					this.removeFile(file);
+				},
+				dictDefaultMessage:"Drop files here or 'click' to change photo"
+        	};
+        	return args;
+		};
+        
+        Appl.prototype.open_photo = function(src){
+        	src = ko.unwrap(src);
+    		src = src.replace("/thumbnail.","/original.");
+    		this.open_dialog("photo-dialog",{src:src,title:title});
+        };
 
     	return Appl;
 	}

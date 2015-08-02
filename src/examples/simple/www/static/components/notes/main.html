@@ -1,0 +1,117 @@
+<!-- ko if:loaded -->
+<div class="row" data-bind="if:selected_note">
+	<div class="col-md-9">
+		<div class="gridster"
+			data-bind="template: { afterRender: $data.init_grid.bind($data) }">
+			<ul
+				data-bind="template: { 
+	            	foreach: selected_note().items, 
+	            	beforeRemove: $data.removed_widget.bind($data), 
+	            	afterAdd: $data.added_widget.bind($data) 
+	            }">
+				<li class="widget-item" data-bind="attr: { 'id': id }">
+					
+					<!-- ko if:type()=='note'-->
+					<p data-bind="text:text"></p>
+					<!-- /ko -->
+					<!-- ko if:type()=='image' && image() -->
+					<img style="height:100%;" data-bind="attr:{src:image},click:$root.open_photo.bind($root,image)" />
+					<!-- /ko -->
+					<!-- ko if:type()=='map' && location() -->
+					<div class="map" data-bind="note-map:$data"></div>
+					<!-- /ko -->
+					<button type="button" class="close"
+						data-bind="click: $parent.edit_widget.bind($parent)">
+						<span class="glyphicon glyphicon-pencil"></span>
+					</button>
+						
+				</li>
+			</ul>
+		</div>
+	</div>
+	<div class="col-md-3">
+		<h3>
+			<button class="btn btn-success btn-sm pull-right"
+					data-bind="click:$data.add_widget.bind($data,{})">
+				<span class="glyphicon glyphicon-plus"></span>
+			</button>
+			<button class="btn btn-warning btn-sm pull-right"
+					style="margin-right: 1em;" 
+					data-bind="click:$data.save.bind($data)">
+				Save
+			</button>
+			<button class="btn btn-danger btn-sm pull-right"
+					style="margin-right: 1em;"
+					data-bind="click: $data.remove_widget.bind($data),
+							   visible:selected_widget">
+				<span class="glyphicon glyphicon-trash"></span>
+			</button>
+			<div class="clearfix" />
+		</h3>
+		<!-- ko if:selected_widget -->
+		<div class="panel panel-default" data-bind="with:selected_widget">
+			<div class="panel-heading">
+				<h3 class="panel-title">
+					<button type="button" class="close" style="position:relative;top:-5px;left:2px;"
+						data-bind="click: $parent.selected_widget.bind($parent,null)">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					Widget <span data-bind="text:id"></span>
+				</h3>
+			</div>
+			<div class="panel-body">
+				<form data-bind="submit:function(){return false;}">
+					<blue-dropdown-field params="name:'type',value:type,values:types"></blue-dropdown-field>
+					<!-- ko if:type() == 'note' -->
+					<blue-text-field params="name:'note',value:text"></blue-text-field>
+					<!-- /ko -->
+					<!-- ko if:type() == 'image' -->
+					<div class="form-group">
+						<label class="control-label">Image:</label>
+						<!-- ko if:image -->
+						<img class="thumbnail"
+							data-bind="attr:{src: image },click:$root.open_photo.bind($root,$data.image)"
+							style="max-width: 100%" />
+						<small data-bind="text:image"></small>
+						<!-- /ko -->
+					</div>
+					<div class="form-group">
+						<label class="control-label">Upload:</label>
+						<div id="note_photo_dropzone" data-bind="dropzone:$root.photo_args('notes',$data.image)"></div>
+					</div>
+					<!-- /ko -->
+					<!-- ko if:type() == 'map' -->
+					<div class="editable-map" editable="true"
+					     data-bind="note-map:$data,event:{ resize:function(){
+						     	console.log(arguments);
+						     }
+					     }"></div>
+					     
+					<div class="input-group" style="margin-top: 6px;">
+						<span class="input-group-addon">lookup</span>
+						<input class="form-control" placeholder="post code" type="text" 
+							   data-bind="value:$parent.code_address,
+							   			  enter:function(){
+							   			  	$('.editable-map').data('_address_') &&
+							   			  	$('.editable-map').data('_address_')($parent.code_address());
+							   			 }" /> 
+						<span class="input-group-btn">
+							<button class="btn btn-default" type="button"
+									data-bind="click:function(){
+											$('.editable-map').data('_address_') &&
+											$('.editable-map').data('_address_')($parent.code_address())
+										}">
+								<span class="glyphicon glyphicon-search"></span>
+							</button>
+						</span>
+					</div>
+					<!-- /ko -->
+				</form>
+			</div>
+		</div>
+		<!-- /ko -->
+	</div>
+</div>
+<!-- <pre data-bind="text:ko.toJSON(selected_note,null,2)"></pre> -->
+<div data-bind="template: {afterRender: $data.init.bind($data)}"></div>
+<!-- /ko -->

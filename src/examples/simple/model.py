@@ -6,11 +6,10 @@ from sqlalchemy.ext.declarative.api import declared_attr, has_inherited_table, d
 import re
 
 
-
 customer_addresses_address = Table('customer_addresses_address', Base.metadata,
     Column('addresses_id', Integer, ForeignKey('customer.id')),
     Column('address_id', Integer, ForeignKey('address.id')),
-    mysql_comment='{\"back_ref\":\"addresses\", \"back_populates\"=\"customers\"}',
+    mysql_comment='{\"back_ref\":\"Customer.addresses\", \"back_populates\":\"Address.customers\"}',
     mysql_engine='InnoDB')
 
 
@@ -52,3 +51,38 @@ class Customer(Base):
         primaryjoin='Customer.delivery_address_id==Address.id', 
         remote_side='Address.id',
         back_populates='delivery_customers')
+
+
+class Note(Base):
+    
+    id = Column(Integer, primary_key=True)
+    title = Column(String(255))
+    author = Column(String(255))
+    items = relationship('NoteItem', uselist=True, 
+        primaryjoin='NoteItem.note_id==Note.id',
+        remote_side='NoteItem.note_id',
+        back_populates='note')
+
+
+class NoteItem(Base):
+    
+    TYPE = ['note','image','map']
+    
+    id = Column(Integer, primary_key=True)
+    note_id = Column(Integer, ForeignKey('note.id'))
+    note = relationship('Note', uselist=False,
+        primaryjoin='NoteItem.note_id==Note.id', 
+        remote_side='Note.id',
+        back_populates='items')
+    text = Column(Text)
+    image = Column(String(255))
+    lat = Column(Numeric(12,8))
+    lng = Column(Numeric(12,8))
+    zoom = Column(Integer)
+    map_type = Column(String(80))
+    row = Column(Integer)
+    col = Column(Integer)
+    width = Column(Integer)
+    height = Column(Integer)
+    type = Column(Enum(*TYPE))
+    

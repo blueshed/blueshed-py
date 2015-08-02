@@ -16,6 +16,10 @@ class AWSConfig(object):
     def __init__(self, key, secret):
         self.aws_access_key_id = key
         self.aws_secret_access_key = secret
+        
+    def __repr__(self, *args, **kwargs):
+        return "AWSConfig(key={},secret={})".format(self.aws_access_key_id,
+                                                    self.aws_secret_access_key)
 
 
 class DateTimeEncoder(json.JSONEncoder):

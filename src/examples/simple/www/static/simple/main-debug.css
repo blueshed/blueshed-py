@@ -13,6 +13,7 @@
 @import url("../bower_components/blueshed-js/src/main.css");
 
 @import url("../bower_components/blueshed-js/src/components/inspector/main.css");
-@import url("../bower_components/blueshed-js/src/components/modeling/main.css");
-@import url("../components/modeling/main.css");
+@import url("../bower_components/blueshed-js/src/components/modeling_v2/main.css");
+@import url("../bower_components/blueshed-js/src/utils/simpleUpload.css");
+@import url("../components/notes/main.css");
 

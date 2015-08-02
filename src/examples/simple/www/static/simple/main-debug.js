@@ -19,6 +19,7 @@ require.config({
 
         "domready": 	  		"bower_components/requirejs-domready/domReady",
         "text":           		"bower_components/requirejs-text/text",
+        "async":   				"bower_components/requirejs-plugins/src/async",
 
         "dropzone":             "bower_components/dropzone/dist/dropzone-amd-module",
                 
@@ -30,6 +31,8 @@ require.config({
         "crossroads":     "bower_components/crossroads/dist/crossroads",
 
         "select2":        "bower_components/select2/dist/js/select2",
+        
+        "gridster":     "bower_components/gridster/dist/jquery.gridster",
         
         "moment":         "bower_components/moment/min/moment.min",
         "numeral":        "bower_components/numeral/numeral",
@@ -57,6 +60,9 @@ require.config({
         },
         "jszip": {
         	exports: "JSZip"
+        },
+        "gridster": {
+            deps: ["jquery"]
         }
     },
     packages:[{
