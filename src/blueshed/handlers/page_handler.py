@@ -13,10 +13,11 @@ class PageHandler(tornado.web.RequestHandler):
         page to be rendered.
     """
         
-    def initialize(self, page=None):
+    def initialize(self, page=None, **kwargs):
         self.page = page if page else "index.html"
+        self.args = kwargs if kwargs else {}
     
     
     def get(self,args=None):    
         logging.info(self.page)
-        self.render(self.page)
+        self.render(self.page, **self.args)

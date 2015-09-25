@@ -26,28 +26,28 @@ class WebsockeAuthtHandler(WebsocketHandler):
         accl_key = self.control.login(message.get("email"), 
                                       message.get("password"))
         self._current_user = accl_key
-        self.send(utils.dumps({
-                            "result":self.get_accl_user_dict(), 
+        self.write_message(utils.dumps({
+                            "result":accl_key, 
                             "cookie":self.gen_login_cookie(accl_key).decode("utf-8"), 
                             "cookie_name":self.cookie_name, 
                             "response_id":message.get("request_id")
                             }))
         self._begin_web_session(self.current_user, 
-                                self.request.ip, 
+                                self.request.remote_ip, 
                                 self.request.headers)
         
 
     def handle_register(self, message):
         accl_key = self.control.register(message.get("email"))
         self._current_user = accl_key
-        self.send(utils.dumps({
-                            "result":self.get_accl_user_dict(), 
+        self.write_message(utils.dumps({
+                            "result":accl_key, 
                             "cookie":self.gen_login_cookie(accl_key), 
                             "cookie_name":self.cookie_name, 
                             "response_id":message.get("request_id")
                             }))
         self._begin_web_session(self.current_user, 
-                                self.request.ip, 
+                                self.request.remote_ip, 
                                 self.request.headers)
         
     
