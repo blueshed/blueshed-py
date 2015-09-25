@@ -10,6 +10,8 @@ from decimal import Decimal
 import datetime
 import collections
 import time
+import random
+import string
         
 class AWSConfig(object):
     
@@ -93,5 +95,10 @@ def patch_tornado():
     tornado.web.GZipContentEncoding.CONTENT_TYPES.add('image/svg+xml')
     mimetypes.add_type('application/font-woff', '.woff') #because its not there!
     mimetypes.add_type('application/font-woff2', '.woff2') #because its not there!
+
+
+
+def gen_token(length=32):
+    return ''.join(random.choice(string.hexdigits) for i in range(length))
 
 
